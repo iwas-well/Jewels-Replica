@@ -25,7 +25,7 @@
 #define ROW_QT      8    //quantity of lines on the game matrix
 #define COL_QT      8    //quantity of columns on the game matrix
 #define JEWEL_SIZE  65   //lenght of jewel slot
-#define VELOCITY    5    //jewel movement velocity
+#define VELOCITY    3    //jewel movement velocity
                          
 //game states
 #define INPUT       0
@@ -47,7 +47,7 @@
 
 #define DIAMOND 9
 //diamond type
-typedef enum{RED, BLUE, GREEN, YELLOW, PURPLE, WHITE, EMPTY = -1} j_type;
+typedef enum{RED, BLUE, GREEN, YELLOW, PURPLE, GREY, WHITE, EMPTY = -1} j_type;
 
 typedef union{ //allows calling 'x' variable by 'col', and 'y' by 'row'
     struct{ int x, y; };
@@ -241,7 +241,7 @@ int set_to_destroy_matched_jewels(jmat* mat)
                     }
                     else if (seq == 5){
                         if ((rowcol.col <= col+(seq-1)) && (rowcol.col >= col)){ //think its impossible to be otherwise
-                            mat->jewels[row][rowcol.col].new_type = mat->jewels[row][rowcol.col].type;
+                            mat->jewels[row][rowcol.col].new_type = WHITE;
                             mat->jewels[row][rowcol.col].new_power = DIAMOND;
                         }
                     }
@@ -289,11 +289,11 @@ int set_to_destroy_matched_jewels(jmat* mat)
                     {
                         if ((rowcol.row <= row+(seq-1)) && (rowcol.row >= row)){ //think its impossible to be otherwise
                             if (mat->jewels[rowcol.row][col].new_power == NONE){
-                                mat->jewels[rowcol.row][col].new_type = mat->jewels[row][col].type;
+                                mat->jewels[rowcol.row][col].new_type = WHITE;
                                 mat->jewels[rowcol.row][col].new_power = DIAMOND;
                             }
                             else{
-                                mat->jewels[row+seq-1][col].new_type = mat->jewels[row][rowcol.col].type;
+                                mat->jewels[row+seq-1][col].new_type = WHITE;
                                 mat->jewels[row+seq-1][col].new_power = DIAMOND;
                             }
                         }
@@ -747,7 +747,7 @@ int main()
     jewel_image[RED] = al_load_bitmap("./sprites/red.png");
     jewel_image[YELLOW] = al_load_bitmap("./sprites/yellow.png");
     jewel_image[GREEN] = al_load_bitmap("./sprites/green.png");
-    jewel_image[WHITE] = al_load_bitmap("./sprites/white.png");
+    jewel_image[GREY] = al_load_bitmap("./sprites/white.png");
     jewel_image[PURPLE] = al_load_bitmap("./sprites/purple.png");
 
     //test loaded images
@@ -762,7 +762,7 @@ int main()
     jewel_up_image[RED] = al_load_bitmap("./sprites/red_up.png");
     jewel_up_image[YELLOW] = al_load_bitmap("./sprites/yellow_up.png");
     jewel_up_image[GREEN] = al_load_bitmap("./sprites/green_up.png");
-    jewel_up_image[WHITE] = al_load_bitmap("./sprites/white_up.png");
+    jewel_up_image[GREY] = al_load_bitmap("./sprites/white_up.png");
     jewel_up_image[PURPLE] = al_load_bitmap("./sprites/purple_up.png");
 
     //test loaded images
@@ -868,7 +868,8 @@ int main()
                     }
                 break;
                 case END_GAME:
-                    printf("perdeu playboy\n");
+                    printf("\rperdeu playboy");
+                    fflush(stdout);
                 break;
             default:
                 break;
@@ -900,8 +901,10 @@ int main()
                             al_draw_bitmap(jewel_up_image[ mat.jewels[i][j].type ],
                                     mat.jewels[i][j].current.x, mat.jewels[i][j].current.y, 0);
                         else if (mat.jewels[i][j].power == DIAMOND)
-                            al_draw_bitmap(jewel_up_image[ mat.jewels[i][j].type ],
-                                    mat.jewels[i][j].current.x, mat.jewels[i][j].current.y, 0);
+                            al_draw_filled_rectangle(mat.jewels[i][j].current.x+10, mat.jewels[i][j].current.y+10, mat.jewels[i][j].current.x+JEWEL_SIZE-10,
+                                    mat.jewels[i][j].current.y+JEWEL_SIZE-10, al_map_rgb(255,255,255));
+                            //al_draw_bitmap(jewel_up_image[ mat.jewels[i][j].type ],
+                            //        mat.jewels[i][j].current.x, mat.jewels[i][j].current.y, 0);
                     }
 
             //first selected to swap is drawn above
@@ -916,6 +919,11 @@ int main()
                     else if (mat.swap2->power == SQUARE)
                         al_draw_bitmap(jewel_up_image[ mat.swap2->type ],
                                 mat.swap2->current.x, mat.swap2->current.y, 0);
+                    else if (mat.swap2->power == DIAMOND)
+                        al_draw_filled_rectangle(mat.swap2->current.x+5, mat.swap2->current.y+5, mat.swap2->current.x+JEWEL_SIZE-5,
+                                mat.swap2->current.y+JEWEL_SIZE-5, al_map_rgb(255,255,255));
+                        //al_draw_bitmap(jewel_up_image[ mat.swap2->type ],
+                        //        mat.swap2->current.x, mat.swap2->current.y, 0);
                 }
 
             //draw upper frame

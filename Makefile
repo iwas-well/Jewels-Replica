@@ -9,7 +9,7 @@ game: jewels.o
 	$(CC) -o game $(CFLAGS) jewels.o $(ALLEGRO_LIBS)
 
 jewels.o: jewels.c
-	$(CC) -c jewels.c
+	$(CC) -c -g jewels.c
 
 clean:
 	-rm -f *.o
