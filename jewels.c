@@ -46,6 +46,7 @@
 #define SQUARE      2
 
 #define DIAMOND 9
+//diamond type
 typedef enum{RED, BLUE, GREEN, YELLOW, PURPLE, WHITE, EMPTY = -1} j_type;
 
 typedef union{ //allows calling 'x' variable by 'col', and 'y' by 'row'
@@ -61,11 +62,12 @@ typedef struct jewel{
     vec2 current;   //current xy position of jewel image
     vec2 proper;    //xy position of jewel slot
     vec2 vel;       //jewel xy velocity values
-    int power;    
     int new_power;
+    j_type new_type;
+    int power;    
     int status;
     j_type type;    //jewel color/type
-    int lower;      
+    int lower;      //flag for how many positions the jewel should lower
 } jewel;
 
 typedef struct jmat{
@@ -95,71 +97,45 @@ void must_init(bool test, const char *description)
 
 void star_destroyer(jmat* mat, int row, int col)
 {
-    mat->jewels[row][col].type = EMPTY;
-    mat->jewels[row][col].status = NONE;
-    mat->jewels[row][col].power = NONE;
-
-    //destroy_row();
-    for (int j = 0; j < COL_QT; j++){
+    //destroi linha
+    for (int j = 0; j < COL_QT; j++)
         destroy_jewel(mat,row,j);
-        //if (mat->jewels[row][j].power == STAR){
-        //    printf("star_destroyer row:%d col:%d\n", row, j);
-        //    star_destroyer(mat, row,j);
-        //}
 
-        //mat->jewels[row][j].type = EMPTY;
-        //mat->jewels[row][j].status = NONE;
-        //mat->jewels[row][j].power = NONE;
-    }
-
-    //destroy_col();
-    for (int i = 0; i < ROW_QT; i++){
+    //destroi coluna
+    for (int i = 0; i < ROW_QT; i++)
         destroy_jewel(mat, i, col);
-        //if (mat->jewels[i][col].power == STAR){
-        //    star_destroyer(mat, i,col);
+}
 
-        //mat->jewels[i][col].type = EMPTY;
-        //mat->jewels[i][col].status = NONE;
-        //mat->jewels[i][col].power = NONE;
-        //}
-    }
+void diamond_destroyer(jmat *mat, j_type type)
+{
+    int i, j;
+
+    for (i = 0; i < ROW_QT; i++)
+        for (j = 0; j < COL_QT; j++)
+            if (mat->jewels[i][j].type == type)
+                destroy_jewel(mat, i, j);
 }
 
 void square_destroyer(jmat* mat, int row, int col)
 {
     int aux_row;
-    mat->jewels[row][col].type = EMPTY;
-    mat->jewels[row][col].status = NONE;
-    mat->jewels[row][col].power = NONE;
-
     for (int i = 0; i < 3; i++) {
         aux_row = (row-1)+i;
 
         if ((aux_row < ROW_QT) && ( aux_row >= 0)){
 
+            //destroi jewels na linha de acima
             if ((col-1) >= 0)
                 destroy_jewel(mat, (row-1)+i, col-1);
 
+            //destroi jewels da linha do meio
             destroy_jewel(mat, (row-1)+i, col);
 
+            //destroi jewels na linha de baixo
             if (col+1 < COL_QT)
                 destroy_jewel(mat, (row-1)+i, col+1);
         }
     }
-}
-
-void destroy_jewel(jmat* mat, int row, int col)
-{
-    if (mat->jewels[row][col].power == NONE)
-    {
-        mat->jewels[row][col].type = EMPTY;
-        mat->jewels[row][col].status = NONE;
-        mat->jewels[row][col].power = NONE;
-    }
-    else if (mat->jewels[row][col].power == STAR)
-        star_destroyer(mat, row, col);
-    else if (mat->jewels[row][col].power == SQUARE)
-        square_destroyer(mat, row, col);
 }
 
 int col_sequence_size(jmat* mat, int row, int col)
@@ -191,22 +167,50 @@ int row_sequence_size(jmat* mat, int row, int col)
     return seq;
 }
 
-int destroy_jewels(jmat* mat)
+void destroy_jewels(jmat* mat)
 {
-    for (int row = 0; row <ROW_QT; row++)
-        for (int col = 0; col <COL_QT; col++)
+    for (int row = 0; row < ROW_QT; row++)
+        for (int col = 0; col < COL_QT; col++)
             if ( mat->jewels[row][col].status == DESTROY )
                 destroy_jewel(mat, row, col);
 }
 
-void create_new_power(jmat* mat){
+void destroy_jewel(jmat* mat, int row, int col)
+{
+    int aux_power;
+    aux_power = mat->jewels[row][col].power;
+
+    mat->jewels[row][col].type = EMPTY;
+    mat->jewels[row][col].status = NONE;
+    mat->jewels[row][col].power = NONE;
+
+    if (aux_power == STAR)
+        star_destroyer(mat, row, col);
+    else if (aux_power == SQUARE)
+        square_destroyer(mat, row, col);
+
+}
+
+void create_new_powers(jmat* mat){
     for (int row = 0; row <ROW_QT; row++)
         for (int col = 0; col <COL_QT; col++)
             if ( mat->jewels[row][col].new_power != NONE ){
-                if( mat->jewels[row][col].new_power == STAR)
+
+                if( mat->jewels[row][col].new_power == STAR){
+                    mat->jewels[row][col].type = mat->jewels[row][col].new_type;
                     mat->jewels[row][col].power = STAR;
-                if( mat->jewels[row][col].new_power == SQUARE)
+                }
+                else if( mat->jewels[row][col].new_power == SQUARE){
+                    mat->jewels[row][col].type = mat->jewels[row][col].new_type;
                     mat->jewels[row][col].power = SQUARE;
+                }
+                else if( mat->jewels[row][col].new_power == DIAMOND){
+                    mat->jewels[row][col].type = mat->jewels[row][col].new_type;
+                    mat->jewels[row][col].power = DIAMOND;
+                }
+
+                mat->jewels[row][col].new_type = EMPTY;
+                mat->jewels[row][col].new_power = NONE;
             }
 }
 
@@ -224,25 +228,23 @@ int set_to_destroy_matched_jewels(jmat* mat)
             seq = row_sequence_size(mat,row,col);
             if (seq >= 3){
                 match = 1;
-                for (int k = 0; k < seq; k++){
-                    if (mat->jewels[row][col+k].power == NONE)
-                        mat->jewels[row][col+k].status = DESTROY;
-                    else if (mat->jewels[row][col+k].power == STAR)
-                        mat->jewels[row][col+k].status = DESTROY;
-                    else if (mat->jewels[row][col+k].power == SQUARE)
-                        mat->jewels[row][col+k].status = DESTROY;
-                }
+                for (int k = 0; k < seq; k++)
+                    mat->jewels[row][col+k].status = DESTROY;
 
-                vec2 rowcol = get_rowcol(mat->swap1->current.x, mat->swap1->current.y, mat);
-                if (seq == 4){
-                    if ((rowcol.col <= col+(seq-1)) && (rowcol.col >= col)) //think its impossible to bo otherwise
-                        //mat->jewels[row][rowcol.col].status = NONE;
-                        mat->jewels[row][rowcol.col].new_power = SQUARE;
-                }
-                else if (seq == 5){
-                    if ((rowcol.col <= col+(seq-1)) && (rowcol.col >= col)) //think its impossible to bo otherwise
-                        //mat->jewels[row][rowcol.col].status = NONE;
-                        mat->jewels[row][rowcol.col].new_power = DIAMOND;
+                if (mat->swap2){
+                    vec2 rowcol = get_rowcol(mat->swap1->current.x, mat->swap1->current.y, mat);
+                    if (seq == 4){
+                        if ((rowcol.col <= col+(seq-1)) && (rowcol.col >= col)){ //think its impossible to be otherwise
+                            mat->jewels[row][rowcol.col].new_type = mat->jewels[row][rowcol.col].type;
+                            mat->jewels[row][rowcol.col].new_power = SQUARE;
+                        }
+                    }
+                    else if (seq == 5){
+                        if ((rowcol.col <= col+(seq-1)) && (rowcol.col >= col)){ //think its impossible to be otherwise
+                            mat->jewels[row][rowcol.col].new_type = mat->jewels[row][rowcol.col].type;
+                            mat->jewels[row][rowcol.col].new_power = DIAMOND;
+                        }
+                    }
                 }
 
             }
@@ -256,18 +258,48 @@ int set_to_destroy_matched_jewels(jmat* mat)
         row = 0;
         while (row < ROW_QT){
             seq = col_sequence_size(mat,row,col);
-            if (seq >= 3){
+            if (seq >= 3)
+            {
                 match = 1;
                 for (int k = 0; k < seq; k++){
-                    if (mat->jewels[row+k][col].status != DESTROY)
-                        mat->jewels[row+k][col].status = DESTROY;
-                    else{
-                        //mat->jewels[row+k][col].status = NONE;
-                        mat->jewels[row+k][col].status = DESTROY;//new_power stuff
+                    if (mat->jewels[row+k][col].status == DESTROY){
+                        mat->jewels[row+k][col].new_type = mat->jewels[row][col].type;
                         mat->jewels[row+k][col].new_power = STAR;
                     }
+                    mat->jewels[row+k][col].status = DESTROY;
                 }
-            }
+
+                if (mat->swap2)
+                {
+                    vec2 rowcol = get_rowcol(mat->swap1->current.x, mat->swap1->current.y, mat);
+                    if (seq == 4)
+                    {
+                        if ((rowcol.row <= row+(seq-1)) && (rowcol.row >= row)){ //think its impossible to be otherwise
+                            if (mat->jewels[rowcol.row][col].new_power == NONE){
+                                mat->jewels[rowcol.row][col].new_type = mat->jewels[row][col].type;
+                                mat->jewels[rowcol.row][col].new_power = SQUARE;
+                            }
+                            else{
+                                mat->jewels[row+seq-1][col].new_type = mat->jewels[row][rowcol.col].type;
+                                mat->jewels[row+seq-1][col].new_power = SQUARE;
+                            }
+                        }
+                    }
+                    else if (seq == 5)
+                    {
+                        if ((rowcol.row <= row+(seq-1)) && (rowcol.row >= row)){ //think its impossible to be otherwise
+                            if (mat->jewels[rowcol.row][col].new_power == NONE){
+                                mat->jewels[rowcol.row][col].new_type = mat->jewels[row][col].type;
+                                mat->jewels[rowcol.row][col].new_power = DIAMOND;
+                            }
+                            else{
+                                mat->jewels[row+seq-1][col].new_type = mat->jewels[row][rowcol.col].type;
+                                mat->jewels[row+seq-1][col].new_power = DIAMOND;
+                            }
+                        }
+                    }
+                }
+            }//if seq >= 3
             row = row+seq;
         }
         col++;
@@ -275,130 +307,12 @@ int set_to_destroy_matched_jewels(jmat* mat)
 
     if (match){
         destroy_jewels(mat);
-        create_new_power(mat);
+        create_new_powers(mat);
     }
-
 
     return match;
 }
 
-
-//int destroy_matched_jewels(jmat* mat)
-//{
-//    int match = 0;
-//    int i, j, seq;
-//    j_type aux;
-//
-//    i = 0;
-//    while ( i < ROW_QT ){
-//        aux = mat->jewels[i][0].type;
-//        seq = 1;
-//        for (j = 1; j < COL_QT; j++){
-//            if ( aux == mat->jewels[i][j].type )
-//                seq++;
-//            else{
-//                if (seq >= 3){
-//                    //goes to the sequence's begining while changing 
-//                    //the sequence's jewels status
-//                    for (int k = 1; k <= seq; k++)
-//                        mat->jewels[i][j-k].status = DESTROY;
-//                    match = 1;
-//                }
-//                seq = 1;
-//                aux = mat->jewels[i][j].type;
-//            }
-//        }
-//        if (seq >= 3){
-//            //goes to the sequence begining while changing status
-//            for (int k = 1; k <= seq; k++)
-//                mat->jewels[i][j-k].status = DESTROY;
-//            match = 1;
-//        }
-//        i++;
-//    }
-//
-//    j = 0;
-//    while ( j < COL_QT ){
-//        aux = mat->jewels[0][j].type;
-//        seq = 1;
-//        for (i = 1; i < ROW_QT; i++){
-//            if ( aux == mat->jewels[i][j].type )
-//                seq++;
-//            else{
-//                if (seq >= 3){
-//                    match = 1;
-//                    for (int k = 1; k <= seq; k++)
-//                        if (mat->jewels[i-k][j].status != DESTROY){
-//                            if (mat->jewels[i-k][j].power == NONE)
-//                                mat->jewels[i-k][j].status = DESTROY;
-//                            else if (mat->jewels[i-k][j].power == STAR){
-//                                mat->jewels[i-k][j].status = DESTROY_STAR;
-//                                mat->jewels[i-k][j].power = NONE;
-//                            }
-//                            else if (mat->jewels[i-k][j].power == STAR){
-//                                mat->jewels[i-k][j].status = DESTROY_STAR;
-//                                mat->jewels[i-k][j].power = NONE;
-//                            }
-//                        }
-//                        else{
-//                            if (mat->jewels[i-k][j].power == STAR)
-//                                mat->jewels[i-k][j].status = DESTROY_STAR;
-//                            else 
-//                                mat->jewels[i-k][j].status = NONE;
-//                            mat->jewels[i-k][j].power = STAR;
-//                        }
-//                }
-//                seq = 1;
-//                aux = mat->jewels[i][j].type;
-//            }
-//        }
-//        if (seq >= 3){
-//            match = 1;
-//            for (int k = 1; k <= seq; k++)
-//                if (mat->jewels[i-k][j].status != DESTROY){
-//                    if (mat->jewels[i-k][j].power == NONE)
-//                        mat->jewels[i-k][j].status = DESTROY;
-//                    else if (mat->jewels[i-k][j].power == STAR){
-//                        mat->jewels[i-k][j].status = DESTROY_STAR;
-//                        mat->jewels[i-k][j].power = NONE;
-//                    }
-//                }
-//                else{
-//                    if (mat->jewels[i-k][j].power == STAR)
-//                        mat->jewels[i-k][j].status = DESTROY_STAR;
-//                    else 
-//                        mat->jewels[i-k][j].status = NONE;
-//                    mat->jewels[i-k][j].power = STAR;
-//                }
-//        }
-//        j++;
-//    }
-//
-//    if ( match )
-//        for (int i = 0; i <ROW_QT; i++)
-//            for (int j = 0; j <COL_QT; j++){
-//                if (mat->jewels[i][j].status == DESTROY){
-//                    mat->jewels[i][j].type = EMPTY;
-//                    mat->jewels[i][j].status = NONE;
-//                }
-//                else if (mat->jewels[i][j].status == DESTROY_STAR){
-//                    int aux_power, aux_type;
-//
-//                    aux_power = mat->jewels[i][j].power;
-//                    if (aux_power != NONE)
-//                        aux_type = mat->jewels[i][j].type;
-//                    else
-//                        aux_type = NONE;
-//
-//                    star_destroyer(mat, i,j);
-//
-//                    mat->jewels[i][j].power = aux_power;
-//                    mat->jewels[i][j].type = aux_type;
-//                }
-//            }
-//
-//    return match;
-//}
 
 j_type get_new_type(){
     return (rand()%6);
@@ -707,18 +621,6 @@ int register_user_input(ALLEGRO_EVENT* event, jmat* mat, int* selected)
     return 0;
 }
 
-//!!!!! test power
-void destroy_type(jmat *mat, j_type type)
-{
-    int i, j;
-
-    for (i = 0; i < ROW_QT; i++)
-        for (j = 0; j < COL_QT; j++)
-            if (mat->jewels[i][j].type == type)
-                //if !power
-                mat->jewels[i][j].type = EMPTY;
-}
-
 int test_row(jmat *mat, int row){
     int j, qt;
     j_type aux;
@@ -788,9 +690,11 @@ int initialize_jewel_structure(jmat *mat){
             mat->jewels[i][j].proper.y = mat->pos.y + (i * JEWEL_SIZE);
             mat->jewels[i][j].current.x = mat->jewels[i][j].proper.x;
             mat->jewels[i][j].current.y = mat->jewels[i][j].proper.y; 
+            mat->jewels[i][j].power = NONE;
             mat->jewels[i][j].type = get_new_type();
+            mat->jewels[i][j].new_power = NONE;
+            mat->jewels[i][j].new_type = EMPTY;
             mat->jewels[i][j].status = NONE;
-            mat->jewels[i][j].power = 0;
             mat->jewels[i][j].lower = 0;
         }
     mat->score = 0;
@@ -902,22 +806,7 @@ int main()
         switch(state){
             case JEWEL:
 
-                //keep in mind swap1 must be initialized
-                if ( mat.swap2 && ((mat.swap1->power == DIAMOND) || (mat.swap2->power == DIAMOND)) ){
-                    if (mat.swap1->power == DIAMOND){
-                        mat.swap1->type = EMPTY;
-                        mat.swap1->power = NONE;
-                        destroy_type(&mat, mat.swap2->type);
-                    }
-                    else{
-                        mat.swap2->type = EMPTY;
-                        mat.swap2->power = NONE;
-                        destroy_type(&mat, mat.swap1->type);
-                    }
-                    set_falling(&mat); //sets jewels downward motion and creates new jewels
-                    state = DROP;
-                }
-                else if ( set_to_destroy_matched_jewels(&mat) ){
+                if ( set_to_destroy_matched_jewels(&mat) ){
                 //else if ( destroy_matched_jewels(&mat) ){
                     set_falling(&mat); //sets jewels downward motion and creates new jewels
                     state = DROP;
@@ -936,9 +825,6 @@ int main()
                 //process input
                 if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN)
                     if ( register_user_input(&event, &mat, &selected) ){
-                        cont++;
-                        printf("\r%d", cont);
-                        fflush(stdout);
                         state = SWAP;
                     }
                 break;
@@ -948,7 +834,22 @@ int main()
                     moving = (update_jewel(mat.swap2) || moving);
 
                     if (!moving){
-                        if ( test_swap(&mat) )
+                        //keep in mind swap1 must be initialized
+                        if ( mat.swap2 && ((mat.swap1->power == DIAMOND) || (mat.swap2->power == DIAMOND)) ){
+                            if (mat.swap1->power == DIAMOND){
+                                mat.swap1->power = NONE;
+                                mat.swap1->type = EMPTY;
+                                diamond_destroyer(&mat, mat.swap2->type);
+                            }
+                            else{
+                                mat.swap2->power = NONE;
+                                mat.swap2->type = EMPTY;
+                                diamond_destroyer(&mat, mat.swap2->type);
+                            }
+                            set_falling(&mat); //sets jewels downward motion and creates new jewels
+                            state = DROP;
+                        }
+                        else if ( test_swap(&mat) )
                             state = JEWEL;
                         else{
                             //swap jewels
@@ -967,7 +868,7 @@ int main()
                     }
                 break;
                 case END_GAME:
-                    //printf("perdeu playboy\n");
+                    printf("perdeu playboy\n");
                 break;
             default:
                 break;
@@ -991,10 +892,14 @@ int main()
                         if (mat.jewels[i][j].power == NONE)
                             al_draw_bitmap(jewel_image[ mat.jewels[i][j].type ],
                                     mat.jewels[i][j].current.x, mat.jewels[i][j].current.y, 0);
-                        else if (mat.jewels[i][j].power == STAR)
+                        else if (mat.jewels[i][j].power == STAR){
                             al_draw_bitmap(jewel_up_image[ mat.jewels[i][j].type ],
                                     mat.jewels[i][j].current.x, mat.jewels[i][j].current.y, 0);
+                        }
                         else if (mat.jewels[i][j].power == SQUARE)
+                            al_draw_bitmap(jewel_up_image[ mat.jewels[i][j].type ],
+                                    mat.jewels[i][j].current.x, mat.jewels[i][j].current.y, 0);
+                        else if (mat.jewels[i][j].power == DIAMOND)
                             al_draw_bitmap(jewel_up_image[ mat.jewels[i][j].type ],
                                     mat.jewels[i][j].current.x, mat.jewels[i][j].current.y, 0);
                     }
@@ -1018,10 +923,10 @@ int main()
                     mat.pos.x+(COL_QT*JEWEL_SIZE), mat.pos.y, al_map_rgb(0,0,0) );
 
             //draw loading screen
-            //if (!init){
-            //    al_clear_to_color(al_map_rgba(0, 0, 0,50));
+            if (!init){
+                al_clear_to_color(al_map_rgba(0, 0, 0,50));
                 //al_draw_bitmap(load_screen, (int)(SC_W/2)-100, (int)(SC_H/2)-20, 0);
-            //}
+            }
 
             if (state == END_GAME){
                 al_draw_bitmap(transparent_screen, 0, 0, 0);
