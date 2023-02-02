@@ -232,18 +232,20 @@ int set_to_destroy_matched_jewels(jmat* mat)
                     mat->jewels[row][col+k].status = DESTROY;
 
                 if (mat->swap2){
+                    //create_row_powerup(mat, row, col, seq);
+                    //!testar se peca exata eh swap1 ou swap2 (ver se row col pertence a sequencia!
                     vec2 rowcol = get_rowcol(mat->swap1->current.x, mat->swap1->current.y, mat);
                     if (seq == 4){
-                        if ((rowcol.col <= col+(seq-1)) && (rowcol.col >= col)){ //think its impossible to be otherwise
+                        //if ((rowcol.col <= col+(seq-1)) && (rowcol.col >= col)){ //think its impossible to be otherwise
                             mat->jewels[row][rowcol.col].new_type = mat->jewels[row][rowcol.col].type;
                             mat->jewels[row][rowcol.col].new_power = SQUARE;
-                        }
+                        //}
                     }
                     else if (seq == 5){
-                        if ((rowcol.col <= col+(seq-1)) && (rowcol.col >= col)){ //think its impossible to be otherwise
+                        //if ((rowcol.col <= col+(seq-1)) && (rowcol.col >= col)){ //think its impossible to be otherwise
                             mat->jewels[row][rowcol.col].new_type = WHITE;
                             mat->jewels[row][rowcol.col].new_power = DIAMOND;
-                        }
+                        //}
                     }
                 }
 
@@ -274,20 +276,24 @@ int set_to_destroy_matched_jewels(jmat* mat)
                     vec2 rowcol = get_rowcol(mat->swap1->current.x, mat->swap1->current.y, mat);
                     if (seq == 4)
                     {
-                        if ((rowcol.row <= row+(seq-1)) && (rowcol.row >= row)){ //think its impossible to be otherwise
+                        //!testar se peca exata eh swap1 ou swap2 (ver se row col pertence a sequencia!
+                        
+                        //if ((rowcol.row <= row+(seq-1)) && (rowcol.row >= row)){ //think its impossible to be otherwise
                             if (mat->jewels[rowcol.row][col].new_power == NONE){
+                            //coloca powerup na mesma peca usada pelo player
                                 mat->jewels[rowcol.row][col].new_type = mat->jewels[row][col].type;
                                 mat->jewels[rowcol.row][col].new_power = SQUARE;
                             }
                             else{
+                            //coloca powerup no inicio da sequencia
                                 mat->jewels[row+seq-1][col].new_type = mat->jewels[row][rowcol.col].type;
                                 mat->jewels[row+seq-1][col].new_power = SQUARE;
                             }
-                        }
+                        //}
                     }
                     else if (seq == 5)
                     {
-                        if ((rowcol.row <= row+(seq-1)) && (rowcol.row >= row)){ //think its impossible to be otherwise
+                        //if ((rowcol.row <= row+(seq-1)) && (rowcol.row >= row)){ //think its impossible to be otherwise
                             if (mat->jewels[rowcol.row][col].new_power == NONE){
                                 mat->jewels[rowcol.row][col].new_type = WHITE;
                                 mat->jewels[rowcol.row][col].new_power = DIAMOND;
@@ -296,7 +302,7 @@ int set_to_destroy_matched_jewels(jmat* mat)
                                 mat->jewels[row+seq-1][col].new_type = WHITE;
                                 mat->jewels[row+seq-1][col].new_power = DIAMOND;
                             }
-                        }
+                        //}
                     }
                 }
             }//if seq >= 3
@@ -697,6 +703,7 @@ int initialize_jewel_structure(jmat *mat){
             mat->jewels[i][j].status = NONE;
             mat->jewels[i][j].lower = 0;
         }
+
     mat->score = 0;
     mat->swap1 = NULL;
     mat->swap2 = NULL;
@@ -844,7 +851,7 @@ int main()
                             else{
                                 mat.swap2->power = NONE;
                                 mat.swap2->type = EMPTY;
-                                diamond_destroyer(&mat, mat.swap2->type);
+                                diamond_destroyer(&mat, mat.swap1->type);
                             }
                             set_falling(&mat); //sets jewels downward motion and creates new jewels
                             state = DROP;
