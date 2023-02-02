@@ -1,4 +1,6 @@
 #include <allegro5/color.h>
+#include <allegro5/allegro_audio.h>
+#include <allegro5/allegro_acodec.h>
 #include <allegro5/display.h>
 #include <allegro5/events.h>
 #include <stdio.h>
@@ -749,6 +751,33 @@ int main()
     ALLEGRO_FONT* font = al_create_builtin_font();
     must_init(font, "fonte");
 
+    ALLEGRO_AUDIO_STREAM *bg_song = NULL;
+    if (!al_install_audio())
+    {
+        fprintf(stderr, "Falha ao inicializar áudio.\n");
+        return 1;
+    }
+    if (!al_init_acodec_addon())
+    {
+        fprintf(stderr, "Falha ao inicializar codecs de áudio.\n");
+        return 1;
+    }
+    if (!al_reserve_samples(1))
+    {
+        fprintf(stderr, "Falha ao alocar canais de áudio.\n");
+        return 1;
+    }
+    bg_song = al_load_audio_stream("./audio/Howls_Moving_Castle.ogg", 4, 1024);
+    if (!bg_song)
+    {
+        fprintf(stderr, "Falha ao carregar audio.\n");
+        return 1;
+    }
+    al_attach_audio_stream_to_mixer(bg_song, al_get_default_mixer());
+    al_set_audio_stream_playing(bg_song, true);
+
+
+
     ALLEGRO_BITMAP* jewel_image[6];
     jewel_image[BLUE] = al_load_bitmap("./sprites/blue.png");
     jewel_image[RED] = al_load_bitmap("./sprites/red.png");
@@ -967,6 +996,7 @@ int main()
     al_destroy_display(disp);
     al_destroy_timer(timer);
     al_destroy_event_queue(queue);
+    al_destroy_audio_stream(bg_song);
 
     return 0;
 }
