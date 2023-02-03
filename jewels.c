@@ -27,7 +27,7 @@
 #define ROW_QT      8    //quantity of lines on the game matrix
 #define COL_QT      8    //quantity of columns on the game matrix
 #define JEWEL_SIZE  65   //lenght of jewel slot
-#define VELOCITY    3    //jewel movement velocity
+#define VELOCITY    2    //jewel movement velocity
                          
 //game states
 #define INPUT       0
@@ -35,6 +35,7 @@
 #define DROP        2
 #define SWAP        3
 #define END_GAME    4
+#define PAUSE       5
 
 //status
 #define NONE            0
@@ -239,14 +240,14 @@ int set_to_destroy_matched_jewels(jmat* mat)
                     vec2 rowcol = get_rowcol(mat->swap1->current.x, mat->swap1->current.y, mat);
                     if (seq == 4){
                         //if ((rowcol.col <= col+(seq-1)) && (rowcol.col >= col)){ //think its impossible to be otherwise
-                            mat->jewels[row][rowcol.col].new_type = mat->jewels[row][rowcol.col].type;
-                            mat->jewels[row][rowcol.col].new_power = SQUARE;
+                        mat->jewels[row][rowcol.col].new_type = mat->jewels[row][rowcol.col].type;
+                        mat->jewels[row][rowcol.col].new_power = SQUARE;
                         //}
                     }
                     else if (seq == 5){
                         //if ((rowcol.col <= col+(seq-1)) && (rowcol.col >= col)){ //think its impossible to be otherwise
-                            mat->jewels[row][rowcol.col].new_type = WHITE;
-                            mat->jewels[row][rowcol.col].new_power = DIAMOND;
+                        mat->jewels[row][rowcol.col].new_type = WHITE;
+                        mat->jewels[row][rowcol.col].new_power = DIAMOND;
                         //}
                     }
                 }
@@ -279,31 +280,30 @@ int set_to_destroy_matched_jewels(jmat* mat)
                     if (seq == 4)
                     {
                         //!testar se peca exata eh swap1 ou swap2 (ver se row col pertence a sequencia!
-                        
                         //if ((rowcol.row <= row+(seq-1)) && (rowcol.row >= row)){ //think its impossible to be otherwise
-                            if (mat->jewels[rowcol.row][col].new_power == NONE){
-                            //coloca powerup na mesma peca usada pelo player
-                                mat->jewels[rowcol.row][col].new_type = mat->jewels[row][col].type;
-                                mat->jewels[rowcol.row][col].new_power = SQUARE;
-                            }
-                            else{
-                            //coloca powerup no inicio da sequencia
-                                mat->jewels[row+seq-1][col].new_type = mat->jewels[row][rowcol.col].type;
-                                mat->jewels[row+seq-1][col].new_power = SQUARE;
-                            }
+                        if (mat->jewels[rowcol.row][col].new_power == NONE){
+                        //coloca powerup na mesma peca usada pelo player
+                            mat->jewels[rowcol.row][col].new_type = mat->jewels[row][col].type;
+                            mat->jewels[rowcol.row][col].new_power = SQUARE;
+                        }
+                        else{
+                        //coloca powerup no inicio da sequencia
+                            mat->jewels[row+seq-1][col].new_type = mat->jewels[row][rowcol.col].type;
+                            mat->jewels[row+seq-1][col].new_power = SQUARE;
+                        }
                         //}
                     }
                     else if (seq == 5)
                     {
                         //if ((rowcol.row <= row+(seq-1)) && (rowcol.row >= row)){ //think its impossible to be otherwise
-                            if (mat->jewels[rowcol.row][col].new_power == NONE){
-                                mat->jewels[rowcol.row][col].new_type = WHITE;
-                                mat->jewels[rowcol.row][col].new_power = DIAMOND;
-                            }
-                            else{
-                                mat->jewels[row+seq-1][col].new_type = WHITE;
-                                mat->jewels[row+seq-1][col].new_power = DIAMOND;
-                            }
+                        if (mat->jewels[rowcol.row][col].new_power == NONE){
+                            mat->jewels[rowcol.row][col].new_type = WHITE;
+                            mat->jewels[rowcol.row][col].new_power = DIAMOND;
+                        }
+                        else{
+                            mat->jewels[row+seq-1][col].new_type = WHITE;
+                            mat->jewels[row+seq-1][col].new_power = DIAMOND;
+                        }
                         //}
                     }
                 }
@@ -752,29 +752,45 @@ int main()
     must_init(font, "fonte");
 
     ALLEGRO_AUDIO_STREAM *bg_song = NULL;
-    if (!al_install_audio())
-    {
-        fprintf(stderr, "Falha ao inicializar áudio.\n");
-        return 1;
-    }
-    if (!al_init_acodec_addon())
-    {
-        fprintf(stderr, "Falha ao inicializar codecs de áudio.\n");
-        return 1;
-    }
-    if (!al_reserve_samples(1))
-    {
-        fprintf(stderr, "Falha ao alocar canais de áudio.\n");
-        return 1;
-    }
-    bg_song = al_load_audio_stream("./audio/Howls_Moving_Castle.ogg", 4, 1024);
-    if (!bg_song)
-    {
-        fprintf(stderr, "Falha ao carregar audio.\n");
-        return 1;
-    }
-    al_attach_audio_stream_to_mixer(bg_song, al_get_default_mixer());
-    al_set_audio_stream_playing(bg_song, true);
+    ALLEGRO_SAMPLE *sample = NULL; 
+    ALLEGRO_SAMPLE_INSTANCE *sampleInstance = NULL;
+    al_init();
+    al_install_audio();
+    al_init_acodec_addon();
+    al_reserve_samples(1);
+    sample = al_load_sample("./audio/Howls_Moving_Castle.ogg");    	// The commented out version below is much easier
+    al_play_sample(sample, 1.0, 0, 1, ALLEGRO_PLAYMODE_LOOP,NULL);
+
+    //However if you need access to additional control, such as currently playing position, you need  
+    //to attach it to a mixer, like the following example
+    //sampleInstance = al_create_sample_instance(sample);
+    //al_attach_sample_instance_to_mixer(sampleInstance, al_get_default_mixer());
+    //al_play_sample_instance(sampleInstance);    	// Loop until sound effect is done playing  
+    //while (al_get_sample_instance_playing(sampleInstance)) {}
+
+    //if (!al_install_audio())
+    //{
+    //    fprintf(stderr, "Falha ao inicializar áudio.\n");
+    //    return 1;
+    //}
+    //if (!al_init_acodec_addon())
+    //{
+    //    fprintf(stderr, "Falha ao inicializar codecs de áudio.\n");
+    //    return 1;
+    //}
+    //if (!al_reserve_samples(1))
+    //{
+    //    fprintf(stderr, "Falha ao alocar canais de áudio.\n");
+    //    return 1;
+    //}
+    //bg_song = al_load_audio_stream("./audio/Howls_Moving_Castle.ogg", 4, 1024);
+    //if (!bg_song)
+    //{
+    //    fprintf(stderr, "Falha ao carregar audio.\n");
+    //    return 1;
+    //}
+    //al_attach_audio_stream_to_mixer(bg_song, al_get_default_mixer());
+    //al_set_audio_stream_playing(bg_song, true);
 
 
 
@@ -822,6 +838,7 @@ int main()
 
     ALLEGRO_EVENT event;
     int cont = 0;
+    int last_state = 0;
 
     int moving;
     vec2 vel;
@@ -836,8 +853,18 @@ int main()
 
         if(event.type == ALLEGRO_EVENT_TIMER)
             render = 1;
-        else if((event.type == ALLEGRO_EVENT_KEY_DOWN) || (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE))
+
+        if((event.type == ALLEGRO_EVENT_DISPLAY_CLOSE))
             break;
+
+        if (event.type == ALLEGRO_EVENT_KEY_DOWN){
+            if (state == PAUSE)
+                state = last_state;
+            else{
+                last_state = state;
+                state = PAUSE;
+            }
+        }
 
         switch(state){
             case JEWEL:
@@ -903,6 +930,8 @@ int main()
                             state = JEWEL;
                     }
                 break;
+                case PAUSE:
+                break;
                 case END_GAME:
                     printf("\rperdeu playboy");
                     fflush(stdout);
@@ -920,7 +949,7 @@ int main()
             //if one jewel is selected, draw a hint around it
             if (selected) 
                 al_draw_filled_rounded_rectangle(mat.swap1->proper.x, mat.swap1->proper.y,
-                        mat.swap1->proper.x+JEWEL_SIZE, mat.swap1->proper.y+JEWEL_SIZE, 15, 15, al_map_rgb(15,15,15));
+                        mat.swap1->proper.x+JEWEL_SIZE, mat.swap1->proper.y+JEWEL_SIZE, 15, 15, al_map_rgba(30,30,30, 100));
 
             //draw jewel
             for (int i = 0; i< ROW_QT; i++)
@@ -944,7 +973,8 @@ int main()
                     }
 
             //first selected to swap is drawn above
-            if (state == SWAP && mat.swap2)
+            //if (state == SWAP && mat.swap2)
+            if (mat.swap2)
                 if (mat.swap2->type != EMPTY ){
                     if (mat.swap2->power == NONE)
                         al_draw_bitmap(jewel_image[ mat.swap2->type ],
@@ -971,7 +1001,12 @@ int main()
                 al_clear_to_color(al_map_rgba(0, 0, 0,50));
                 //al_draw_bitmap(load_screen, (int)(SC_W/2)-100, (int)(SC_H/2)-20, 0);
             }
+            else if(state == PAUSE){
+                al_draw_filled_rectangle(0,0,SC_W,SC_H,al_map_rgba(10, 90, 170, 90));
+                al_draw_text(font, al_map_rgb(255,255,255), (int)(SC_W/2)-20, (int)(SC_H/2)-20, 0, "PAUSE");
+            }
 
+            //draw end game screen
             if (state == END_GAME){
                 al_draw_bitmap(transparent_screen, 0, 0, 0);
                 al_draw_text(font, al_map_rgb(255,255,255), (int)(SC_W/2)-20, (int)(SC_H/2)-20, 0, "You Lost");
