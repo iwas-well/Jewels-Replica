@@ -27,7 +27,7 @@
 #define ROW_QT      8    //quantity of lines on the game matrix
 #define COL_QT      8    //quantity of columns on the game matrix
 #define JEWEL_SIZE  65   //lenght of jewel slot
-#define VELOCITY    2    //jewel movement velocity
+#define VELOCITY    4    //jewel movement velocity
                          
 //game states
 #define INPUT       0
@@ -235,20 +235,48 @@ int set_to_destroy_matched_jewels(jmat* mat)
                     mat->jewels[row][col+k].status = DESTROY;
 
                 if (mat->swap2){
-                    //create_row_powerup(mat, row, col, seq);
-                    //!testar se peca exata eh swap1 ou swap2 (ver se row col pertence a sequencia!
-                    vec2 rowcol = get_rowcol(mat->swap1->current.x, mat->swap1->current.y, mat);
-                    if (seq == 4){
-                        //if ((rowcol.col <= col+(seq-1)) && (rowcol.col >= col)){ //think its impossible to be otherwise
-                        mat->jewels[row][rowcol.col].new_type = mat->jewels[row][rowcol.col].type;
-                        mat->jewels[row][rowcol.col].new_power = SQUARE;
-                        //}
+                    vec2 slot_swap1 = get_rowcol(mat->swap1->current.x, mat->swap1->current.y, mat);
+                    vec2 slot_swap2 = get_rowcol(mat->swap2->current.x, mat->swap2->current.y, mat);
+
+                    if (seq == 4)
+                    {
+                        //se swap1 pertence a sequencia, ele vira powerup
+                        if ((slot_swap1.row == row) && (slot_swap1.col <= col+seq-1) && (slot_swap1.col >= col)) 
+                        {
+                            mat->jewels[row][slot_swap1.col].new_type = mat->jewels[row][slot_swap1.col].type;
+                            mat->jewels[row][slot_swap1.col].new_power = SQUARE;
+                        }
+                        //se swap2 pertence a sequencia, ele vira powerup
+                        else if ((slot_swap2.row == row) && (slot_swap2.col <= col+seq-1) && (slot_swap2.col >= col))
+                        {
+                            mat->jewels[row][slot_swap2.col].new_type = mat->jewels[row][slot_swap2.col].type;
+                            mat->jewels[row][slot_swap2.col].new_power = SQUARE;
+                        }
+                        //se nem swap1 nem swap2 pertencem, peca do meio vira powerup
+                        else
+                        {
+                            mat->jewels[row][col+1].new_type = mat->jewels[row][col+1].type;
+                            mat->jewels[row][col+1].new_power = SQUARE;
+                        }
+
                     }
-                    else if (seq == 5){
-                        //if ((rowcol.col <= col+(seq-1)) && (rowcol.col >= col)){ //think its impossible to be otherwise
-                        mat->jewels[row][rowcol.col].new_type = WHITE;
-                        mat->jewels[row][rowcol.col].new_power = DIAMOND;
-                        //}
+                    else if (seq >= 5)
+                    {
+                        if ((slot_swap1.row == row) && (slot_swap1.col <= col+seq-1) && (slot_swap1.col >= col)) 
+                        {
+                            mat->jewels[row][slot_swap1.col].new_type = WHITE;
+                            mat->jewels[row][slot_swap1.col].new_power = DIAMOND;
+                        }
+                        else if ((slot_swap2.row == row) && (slot_swap2.col <= col+seq-1) && (slot_swap2.col >= col))
+                        {
+                            mat->jewels[row][slot_swap2.col].new_type = WHITE;
+                            mat->jewels[row][slot_swap2.col].new_power = DIAMOND;
+                        }
+                        else
+                        {
+                            mat->jewels[row][col+2].new_type = WHITE;
+                            mat->jewels[row][col+2].new_power = DIAMOND;
+                        }
                     }
                 }
 
@@ -276,38 +304,90 @@ int set_to_destroy_matched_jewels(jmat* mat)
 
                 if (mat->swap2)
                 {
-                    vec2 rowcol = get_rowcol(mat->swap1->current.x, mat->swap1->current.y, mat);
+                    //vec2 rowcol = get_rowcol(mat->swap1->current.x, mat->swap1->current.y, mat);
+                    vec2 slot_swap1 = get_rowcol(mat->swap1->current.x, mat->swap1->current.y, mat);
+                    vec2 slot_swap2 = get_rowcol(mat->swap2->current.x, mat->swap2->current.y, mat);
+
                     if (seq == 4)
                     {
-                        //!testar se peca exata eh swap1 ou swap2 (ver se row col pertence a sequencia!
-                        //if ((rowcol.row <= row+(seq-1)) && (rowcol.row >= row)){ //think its impossible to be otherwise
-                        if (mat->jewels[rowcol.row][col].new_power == NONE){
-                        //coloca powerup na mesma peca usada pelo player
-                            mat->jewels[rowcol.row][col].new_type = mat->jewels[row][col].type;
-                            mat->jewels[rowcol.row][col].new_power = SQUARE;
+                        if ((slot_swap1.col == col) && (slot_swap1.row <= row+seq-1) && (slot_swap1.row >= row)) 
+                        {
+                            if (mat->jewels[slot_swap1.row][col].new_power == NONE){
+                                mat->jewels[slot_swap1.row][col].new_type = mat->jewels[slot_swap1.row][col].type;
+                                mat->jewels[slot_swap1.row][col].new_power = SQUARE;
+                            }
+                            else{
+                            //coloca powerup no inicio da sequencia
+                                mat->jewels[row+seq-1][col].new_type = mat->jewels[row+seq-1][col].type;
+                                mat->jewels[row+seq-1][col].new_power = SQUARE;
+                            }
+                        }
+                        else if ((slot_swap2.col == col) && (slot_swap2.row <= row+seq-1) && (slot_swap2.row >= row)) 
+                        {
+                            if (mat->jewels[slot_swap2.row][col].new_power == NONE){
+                                mat->jewels[slot_swap2.row][col].new_type = mat->jewels[slot_swap2.row][col].type;
+                                mat->jewels[slot_swap2.row][col].new_power = SQUARE;
+                            }
+                            else{
+                            //coloca powerup no inicio da sequencia
+                                mat->jewels[row+seq-1][col].new_type = mat->jewels[row+seq-1][col].type;
+                                mat->jewels[row+seq-1][col].new_power = SQUARE;
+                            }
                         }
                         else{
-                        //coloca powerup no inicio da sequencia
-                            mat->jewels[row+seq-1][col].new_type = mat->jewels[row][rowcol.col].type;
-                            mat->jewels[row+seq-1][col].new_power = SQUARE;
+                            if (mat->jewels[row+1][col].new_power == NONE){
+                            //coloca powerup no meio da sequencia
+                                mat->jewels[row+1][col].new_type = mat->jewels[row+1][col].type;
+                                mat->jewels[row+1][col].new_power = SQUARE;
+                            }
+                            else{
+                            //coloca powerup no inicio da sequencia
+                                mat->jewels[row+seq-1][col].new_type = mat->jewels[row+seq-1][col].type;
+                                mat->jewels[row+seq-1][col].new_power = SQUARE;
+                            }
                         }
-                        //}
                     }
-                    else if (seq == 5)
+                    else if (seq >= 5)
                     {
-                        //if ((rowcol.row <= row+(seq-1)) && (rowcol.row >= row)){ //think its impossible to be otherwise
-                        if (mat->jewels[rowcol.row][col].new_power == NONE){
-                            mat->jewels[rowcol.row][col].new_type = WHITE;
-                            mat->jewels[rowcol.row][col].new_power = DIAMOND;
+                        if ((slot_swap1.col == col) && (slot_swap1.row <= row+seq-1) && (slot_swap1.row >= row)) 
+                        {
+                            if (mat->jewels[slot_swap1.row][col].new_power == NONE){
+                                mat->jewels[slot_swap1.row][col].new_type = mat->jewels[slot_swap1.row][col].type;
+                                mat->jewels[slot_swap1.row][col].new_power = DIAMOND;
+                            }
+                            else{
+                            //coloca powerup no inicio da sequencia
+                                mat->jewels[row+seq-1][col].new_type = mat->jewels[row+seq-1][col].type;
+                                mat->jewels[row+seq-1][col].new_power = DIAMOND;
+                            }
+                        }
+                        else if ((slot_swap2.col == col) && (slot_swap2.row <= row+seq-1) && (slot_swap2.row >= row)) 
+                        {
+                            if (mat->jewels[slot_swap2.row][col].new_power == NONE){
+                                mat->jewels[slot_swap2.row][col].new_type = mat->jewels[slot_swap2.row][col].type;
+                                mat->jewels[slot_swap2.row][col].new_power = DIAMOND;
+                            }
+                            else{
+                            //coloca powerup no inicio da sequencia
+                                mat->jewels[row+seq-1][col].new_type = mat->jewels[row+seq-1][col].type;
+                                mat->jewels[row+seq-1][col].new_power = DIAMOND;
+                            }
                         }
                         else{
-                            mat->jewels[row+seq-1][col].new_type = WHITE;
-                            mat->jewels[row+seq-1][col].new_power = DIAMOND;
+                            if (mat->jewels[row+2][col].new_power == NONE){
+                            //coloca powerup no meio da sequencia
+                                mat->jewels[row+2][col].new_type = mat->jewels[row+2][col].type;
+                                mat->jewels[row+2][col].new_power = DIAMOND;
+                            }
+                            else{
+                            //coloca powerup no inicio da sequencia
+                                mat->jewels[row+seq-1][col].new_type = mat->jewels[row+seq-1][col].type;
+                                mat->jewels[row+seq-1][col].new_power = DIAMOND;
+                            }
                         }
-                        //}
                     }
                 }
-            }//if seq >= 3
+            } //if seq >= 3
             row = row+seq;
         }
         col++;
