@@ -24,8 +24,8 @@
 //game configuration
 #define SC_W        1300 //screen width
 #define SC_H        750  //screen height
-#define ROW_QT      8    //quantity of lines on the game matrix
-#define COL_QT      8    //quantity of columns on the game matrix
+#define ROW_QT      10    //quantity of lines on the game matrix
+#define COL_QT      10    //quantity of columns on the game matrix
 #define JEWEL_SIZE  65   //lenght of jewel slot
 #define VELOCITY    4    //jewel movement velocity
                          
@@ -296,8 +296,17 @@ int set_to_destroy_matched_jewels(jmat* mat)
                 match = 1;
                 for (int k = 0; k < seq; k++){
                     if (mat->jewels[row+k][col].status == DESTROY){
-                        mat->jewels[row+k][col].new_type = mat->jewels[row][col].type;
-                        mat->jewels[row+k][col].new_power = STAR;
+                        mat->jewels[row+k][col].new_type = mat->jewels[row+k][col].type;
+                        if ( mat->jewels[row+k][col].new_power == NONE ){
+                            mat->jewels[row+k][col].new_power = STAR;
+                        }
+                        else{
+                            //se ja ha powerup na intercecao, troca por star e coloca no inicio 
+                            int aux_power = mat->jewels[row+k][col].new_power;
+                            //buscar peca vazia na sequencia?    
+                            mat->jewels[row+k][col].new_power = STAR;
+                            mat->jewels[row][col].new_power = aux_power;
+                        }
                     }
                     mat->jewels[row+k][col].status = DESTROY;
                 }
@@ -839,7 +848,7 @@ int main()
     al_init_acodec_addon();
     al_reserve_samples(1);
     sample = al_load_sample("./audio/Howls_Moving_Castle.ogg");    	// The commented out version below is much easier
-    al_play_sample(sample, 1.0, 0, 1, ALLEGRO_PLAYMODE_LOOP,NULL);
+    //al_play_sample(sample, 1.0, 0, 1, ALLEGRO_PLAYMODE_LOOP,NULL);
 
     //However if you need access to additional control, such as currently playing position, you need  
     //to attach it to a mixer, like the following example
