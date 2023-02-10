@@ -24,8 +24,8 @@
 //game configuration
 #define SC_W        1300 //screen width
 #define SC_H        750  //screen height
-#define ROW_QT      10    //quantity of lines on the game matrix
-#define COL_QT      10    //quantity of columns on the game matrix
+#define ROW_QT      8    //quantity of lines on the game matrix
+#define COL_QT      8    //quantity of columns on the game matrix
 #define JEWEL_SIZE  65   //lenght of jewel slot
 #define VELOCITY    4    //jewel movement velocity
                          
@@ -113,6 +113,8 @@ void diamond_destroyer(jmat *mat, j_type type)
 {
     int i, j;
 
+
+    mat->score += 10;
     for (i = 0; i < ROW_QT; i++)
         for (j = 0; j < COL_QT; j++)
             if (mat->jewels[i][j].type == type)
@@ -187,10 +189,14 @@ void destroy_jewel(jmat* mat, int row, int col)
     mat->jewels[row][col].status = NONE;
     mat->jewels[row][col].power = NONE;
 
-    if (aux_power == STAR)
+    if (aux_power == STAR){
+        mat->score += 5;
         star_destroyer(mat, row, col);
-    else if (aux_power == SQUARE)
+    }
+    else if (aux_power == SQUARE){
+        mat->score += 6;
         square_destroyer(mat, row, col);
+    }
 
 }
 
@@ -238,6 +244,9 @@ int set_to_destroy_matched_jewels(jmat* mat)
                     vec2 slot_swap1 = get_rowcol(mat->swap1->current.x, mat->swap1->current.y, mat);
                     vec2 slot_swap2 = get_rowcol(mat->swap2->current.x, mat->swap2->current.y, mat);
 
+                    if (seq == 3){
+                        mat->score += 1;
+                    }
                     if (seq == 4)
                     {
                         //se swap1 pertence a sequencia, ele vira powerup
@@ -259,6 +268,7 @@ int set_to_destroy_matched_jewels(jmat* mat)
                             mat->jewels[row][col+1].new_power = SQUARE;
                         }
 
+                        mat->score += 2;
                     }
                     else if (seq >= 5)
                     {
@@ -277,6 +287,7 @@ int set_to_destroy_matched_jewels(jmat* mat)
                             mat->jewels[row][col+2].new_type = WHITE;
                             mat->jewels[row][col+2].new_power = DIAMOND;
                         }
+                        mat->score += 3;
                     }
                 }
 
@@ -296,17 +307,19 @@ int set_to_destroy_matched_jewels(jmat* mat)
                 match = 1;
                 for (int k = 0; k < seq; k++){
                     if (mat->jewels[row+k][col].status == DESTROY){
-                        mat->jewels[row+k][col].new_type = mat->jewels[row+k][col].type;
                         if ( mat->jewels[row+k][col].new_power == NONE ){
                             mat->jewels[row+k][col].new_power = STAR;
                         }
                         else{
-                            //se ja ha powerup na intercecao, troca por star e coloca no inicio 
+                            //se ja ha powerup na intercecao, troca por star e coloca no inicio da linha
+                            //talvez trocar futuramente pelo inicio da coluna
                             int aux_power = mat->jewels[row+k][col].new_power;
                             //buscar peca vazia na sequencia?    
                             mat->jewels[row+k][col].new_power = STAR;
+                            mat->jewels[row][col].new_type = mat->jewels[row+k][col].type;
                             mat->jewels[row][col].new_power = aux_power;
                         }
+                        mat->jewels[row+k][col].new_type = mat->jewels[row+k][col].type;
                     }
                     mat->jewels[row+k][col].status = DESTROY;
                 }
@@ -317,6 +330,9 @@ int set_to_destroy_matched_jewels(jmat* mat)
                     vec2 slot_swap1 = get_rowcol(mat->swap1->current.x, mat->swap1->current.y, mat);
                     vec2 slot_swap2 = get_rowcol(mat->swap2->current.x, mat->swap2->current.y, mat);
 
+                    if (seq == 3){
+                        mat->score += 1;
+                    }
                     if (seq == 4)
                     {
                         if ((slot_swap1.col == col) && (slot_swap1.row <= row+seq-1) && (slot_swap1.row >= row)) 
@@ -355,6 +371,7 @@ int set_to_destroy_matched_jewels(jmat* mat)
                                 mat->jewels[row+seq-1][col].new_power = SQUARE;
                             }
                         }
+                        mat->score += 2;
                     }
                     else if (seq >= 5)
                     {
@@ -394,8 +411,9 @@ int set_to_destroy_matched_jewels(jmat* mat)
                                 mat->jewels[row+seq-1][col].new_power = DIAMOND;
                             }
                         }
-                    }
-                }
+                        mat->score += 3;
+                    }//if seq >=5 
+                }//if mat->swap2
             } //if seq >= 3
             row = row+seq;
         }
@@ -848,7 +866,7 @@ int main()
     al_init_acodec_addon();
     al_reserve_samples(1);
     sample = al_load_sample("./audio/Howls_Moving_Castle.ogg");    	// The commented out version below is much easier
-    //al_play_sample(sample, 1.0, 0, 1, ALLEGRO_PLAYMODE_LOOP,NULL);
+    al_play_sample(sample, 1.0, 0, 1, ALLEGRO_PLAYMODE_LOOP,NULL);
 
     //However if you need access to additional control, such as currently playing position, you need  
     //to attach it to a mixer, like the following example
@@ -1085,12 +1103,17 @@ int main()
             al_draw_filled_rectangle(mat.pos.x, mat.pos.y-200,
                     mat.pos.x+(COL_QT*JEWEL_SIZE), mat.pos.y, al_map_rgb(0,0,0) );
 
+            char score_text[11];
+            sprintf(score_text, "%010d", mat.score);
+            al_draw_text(font, al_map_rgb(255,255,255), 10, 20, 0, score_text);
+
             //draw loading screen
-            if (!init){
-                al_clear_to_color(al_map_rgba(0, 0, 0,50));
-                //al_draw_bitmap(load_screen, (int)(SC_W/2)-100, (int)(SC_H/2)-20, 0);
-            }
-            else if(state == PAUSE){
+            //if (!init){
+            //    al_clear_to_color(al_map_rgba(0, 0, 0,50));
+            //    //al_draw_bitmap(load_screen, (int)(SC_W/2)-100, (int)(SC_H/2)-20, 0);
+            //}
+            //else if(state == PAUSE){
+            if(state == PAUSE){
                 al_draw_filled_rectangle(0,0,SC_W,SC_H,al_map_rgba(10, 90, 170, 90));
                 al_draw_text(font, al_map_rgb(255,255,255), (int)(SC_W/2)-20, (int)(SC_H/2)-20, 0, "PAUSE");
             }
