@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <allegro5/allegro5.h>
 #include <allegro5/allegro_font.h>
+#include <allegro5/allegro_ttf.h>
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_image.h>
 
@@ -22,12 +23,16 @@
 //  art
 
 //game configuration
-#define SC_W        1300 //screen width
-#define SC_H        750  //screen height
+//#define SC_W        1300 //screen width
+//#define SC_H        750  //screen height
+#define SC_W        1000 //screen width
+#define SC_H        720  //screen height
 #define ROW_QT      8    //quantity of lines on the game matrix
 #define COL_QT      8    //quantity of columns on the game matrix
 #define JEWEL_SIZE  65   //lenght of jewel slot
 #define VELOCITY    4    //jewel movement velocity
+#define SORTED_PER_FRAME    20  //num of swappings per frame on new level state
+#define NEW_LEVEL_TIMER     180 //num of frames spent on new level state
                          
 //game states
 #define INPUT       0
@@ -36,6 +41,7 @@
 #define SWAP        3
 #define END_GAME    4
 #define PAUSE       5
+#define NEW_LEVEL   6
 
 //status
 #define NONE            0
@@ -47,8 +53,8 @@
 #define NONE        0
 #define STAR        1
 #define SQUARE      2
+#define DIAMOND     3
 
-#define DIAMOND 9
 //diamond type
 typedef enum{RED, BLUE, GREEN, YELLOW, PURPLE, GREY, WHITE, EMPTY = -1} j_type;
 
@@ -80,7 +86,7 @@ typedef struct jmat{
     int score;
 } jmat;
 
-void destroy_jewel(jmat* mat, int row, int col);
+void destroy_jewel(jmat* mat, int row, int col, int destroyer_type);
 
 vec2 get_rowcol(int x, int y, jmat* mat)
 {
@@ -98,30 +104,29 @@ void must_init(bool test, const char *description)
     exit(1);
 }
 
-void star_destroyer(jmat* mat, int row, int col)
+void star_destroyer(jmat* mat, int row, int col, int destroyer_type)
 {
     //destroi linha
     for (int j = 0; j < COL_QT; j++)
-        destroy_jewel(mat,row,j);
+        destroy_jewel(mat,row,j, destroyer_type);
 
     //destroi coluna
     for (int i = 0; i < ROW_QT; i++)
-        destroy_jewel(mat, i, col);
+        destroy_jewel(mat, i, col, destroyer_type);
 }
 
 void diamond_destroyer(jmat *mat, j_type type)
 {
     int i, j;
 
-
-    mat->score += 10;
+    mat->score += 100;
     for (i = 0; i < ROW_QT; i++)
         for (j = 0; j < COL_QT; j++)
             if (mat->jewels[i][j].type == type)
-                destroy_jewel(mat, i, j);
+                destroy_jewel(mat, i, j, WHITE);
 }
 
-void square_destroyer(jmat* mat, int row, int col)
+void square_destroyer(jmat* mat, int row, int col, int destroyer_type)
 {
     int aux_row;
     for (int i = 0; i < 3; i++) {
@@ -131,14 +136,14 @@ void square_destroyer(jmat* mat, int row, int col)
 
             //destroi jewels na linha de acima
             if ((col-1) >= 0)
-                destroy_jewel(mat, (row-1)+i, col-1);
+                destroy_jewel(mat, (row-1)+i, col-1, destroyer_type);
 
             //destroi jewels da linha do meio
-            destroy_jewel(mat, (row-1)+i, col);
+            destroy_jewel(mat, (row-1)+i, col, destroyer_type);
 
             //destroi jewels na linha de baixo
             if (col+1 < COL_QT)
-                destroy_jewel(mat, (row-1)+i, col+1);
+                destroy_jewel(mat, (row-1)+i, col+1, destroyer_type);
         }
     }
 }
@@ -177,25 +182,50 @@ void destroy_jewels(jmat* mat)
     for (int row = 0; row < ROW_QT; row++)
         for (int col = 0; col < COL_QT; col++)
             if ( mat->jewels[row][col].status == DESTROY )
-                destroy_jewel(mat, row, col);
+                destroy_jewel(mat, row, col, EMPTY);
+}
+void increase_score(jmat* mat, int seq_size)
+{
+     if (seq_size == 3)
+         mat->score += 10;
+     else if (seq_size == 4)
+         mat->score += 20;
+     else if (seq_size >= 5)
+         mat->score += 30;
 }
 
-void destroy_jewel(jmat* mat, int row, int col)
+void increase_score_power(jmat* mat, int powerup)
+{
+     if (powerup == SQUARE)
+         mat->score += 50;
+     else if (powerup == STAR)
+         mat->score += 60;
+     else if (powerup == DIAMOND)
+         mat->score += 100;
+ }
+
+void destroy_jewel(jmat* mat, int row, int col, int destroyer_type)
 {
     int aux_power;
+    int aux_type;
     aux_power = mat->jewels[row][col].power;
+    aux_type = mat->jewels[row][col].type;
 
     mat->jewels[row][col].type = EMPTY;
     mat->jewels[row][col].status = NONE;
     mat->jewels[row][col].power = NONE;
 
     if (aux_power == STAR){
-        mat->score += 5;
-        star_destroyer(mat, row, col);
+        increase_score_power(mat, SQUARE);
+        star_destroyer(mat, row, col, aux_type);
     }
     else if (aux_power == SQUARE){
-        mat->score += 6;
-        square_destroyer(mat, row, col);
+        increase_score_power(mat, SQUARE);
+        square_destroyer(mat, row, col, aux_type);
+    }
+    else if (aux_power == DIAMOND){
+        increase_score_power(mat, DIAMOND);
+        diamond_destroyer(mat, destroyer_type);
     }
 
 }
@@ -245,7 +275,7 @@ int set_to_destroy_matched_jewels(jmat* mat)
                     vec2 slot_swap2 = get_rowcol(mat->swap2->current.x, mat->swap2->current.y, mat);
 
                     if (seq == 3){
-                        mat->score += 1;
+                        increase_score(mat, seq);
                     }
                     if (seq == 4)
                     {
@@ -267,8 +297,7 @@ int set_to_destroy_matched_jewels(jmat* mat)
                             mat->jewels[row][col+1].new_type = mat->jewels[row][col+1].type;
                             mat->jewels[row][col+1].new_power = SQUARE;
                         }
-
-                        mat->score += 2;
+                        increase_score(mat, seq);
                     }
                     else if (seq >= 5)
                     {
@@ -287,7 +316,7 @@ int set_to_destroy_matched_jewels(jmat* mat)
                             mat->jewels[row][col+2].new_type = WHITE;
                             mat->jewels[row][col+2].new_power = DIAMOND;
                         }
-                        mat->score += 3;
+                        increase_score(mat, seq);
                     }
                 }
 
@@ -331,7 +360,7 @@ int set_to_destroy_matched_jewels(jmat* mat)
                     vec2 slot_swap2 = get_rowcol(mat->swap2->current.x, mat->swap2->current.y, mat);
 
                     if (seq == 3){
-                        mat->score += 1;
+                        increase_score(mat, seq);
                     }
                     if (seq == 4)
                     {
@@ -371,47 +400,47 @@ int set_to_destroy_matched_jewels(jmat* mat)
                                 mat->jewels[row+seq-1][col].new_power = SQUARE;
                             }
                         }
-                        mat->score += 2;
+                        increase_score(mat, seq);
                     }
                     else if (seq >= 5)
                     {
                         if ((slot_swap1.col == col) && (slot_swap1.row <= row+seq-1) && (slot_swap1.row >= row)) 
                         {
                             if (mat->jewels[slot_swap1.row][col].new_power == NONE){
-                                mat->jewels[slot_swap1.row][col].new_type = mat->jewels[slot_swap1.row][col].type;
+                                mat->jewels[slot_swap1.row][col].new_type = WHITE;
                                 mat->jewels[slot_swap1.row][col].new_power = DIAMOND;
                             }
                             else{
                             //coloca powerup no inicio da sequencia
-                                mat->jewels[row+seq-1][col].new_type = mat->jewels[row+seq-1][col].type;
+                                mat->jewels[row+seq-1][col].new_type = WHITE;
                                 mat->jewels[row+seq-1][col].new_power = DIAMOND;
                             }
                         }
                         else if ((slot_swap2.col == col) && (slot_swap2.row <= row+seq-1) && (slot_swap2.row >= row)) 
                         {
                             if (mat->jewels[slot_swap2.row][col].new_power == NONE){
-                                mat->jewels[slot_swap2.row][col].new_type = mat->jewels[slot_swap2.row][col].type;
+                                mat->jewels[slot_swap2.row][col].new_type = WHITE;
                                 mat->jewels[slot_swap2.row][col].new_power = DIAMOND;
                             }
                             else{
                             //coloca powerup no inicio da sequencia
-                                mat->jewels[row+seq-1][col].new_type = mat->jewels[row+seq-1][col].type;
+                                mat->jewels[row+seq-1][col].new_type = WHITE;
                                 mat->jewels[row+seq-1][col].new_power = DIAMOND;
                             }
                         }
                         else{
                             if (mat->jewels[row+2][col].new_power == NONE){
                             //coloca powerup no meio da sequencia
-                                mat->jewels[row+2][col].new_type = mat->jewels[row+2][col].type;
+                                mat->jewels[row+2][col].new_type = WHITE;
                                 mat->jewels[row+2][col].new_power = DIAMOND;
                             }
                             else{
                             //coloca powerup no inicio da sequencia
-                                mat->jewels[row+seq-1][col].new_type = mat->jewels[row+seq-1][col].type;
+                                mat->jewels[row+seq-1][col].new_type = WHITE;
                                 mat->jewels[row+seq-1][col].new_power = DIAMOND;
                             }
                         }
-                        mat->score += 3;
+                        increase_score(mat, seq);
                     }//if seq >=5 
                 }//if mat->swap2
             } //if seq >= 3
@@ -427,7 +456,6 @@ int set_to_destroy_matched_jewels(jmat* mat)
 
     return match;
 }
-
 
 j_type get_new_type(){
     return (rand()%6);
@@ -600,19 +628,28 @@ jewel** allocate_jewel_matrix(int row, int col)
     return jewels;
 }
 
-/*swap jewels 'a' and 'b' types and set their velocity in opposit directions,
- * x_speed y_speed being the x velocity and y velocity of jewel 'a'*/
-void swap_jewels(jewel* j1, jewel* j2, float x_speed, float y_speed)
+void set_jewel_motion(jewel* j1, float x_speed, float y_speed)
 {
     j1->vel.x = x_speed;
     j1->vel.y = y_speed;
-    j1->current.x = j2->proper.x;
-    j1->current.y = j2->proper.y;
+}
+void set_jewel_position(jewel* j1, vec2 new_current_position)
+{
+    j1->current.x = new_current_position.x;
+    j1->current.y = new_current_position.y;
+}
 
-    j2->vel.x = -x_speed;
-    j2->vel.y = -y_speed;
-    j2->current.x = j1->proper.x;
-    j2->current.y = j1->proper.y;
+void swap_jewels_types(jewel* j1, jewel* j2)//, float x_speed, float y_speed)
+{
+    //j1->vel.x = x_speed;
+    //j1->vel.y = y_speed;
+    //j1->current.x = j2->proper.x;
+    //j1->current.y = j2->proper.y;
+
+    //j2->vel.x = -x_speed;
+    //j2->vel.y = -y_speed;
+    //j2->current.x = j1->proper.x;
+    //j2->current.y = j1->proper.y;
 
     //swap types
     j_type aux_type;
@@ -625,6 +662,19 @@ void swap_jewels(jewel* j1, jewel* j2, float x_speed, float y_speed)
     aux_power = j1->power;
     j1->power = j2->power; 
     j2->power = aux_power; 
+}
+
+/*swap jewels 'a' and 'b' types and set their velocity in opposit directions,
+ * x_speed y_speed being the x velocity and y velocity of jewel 'a'*/
+void swap_jewels(jewel* j1, jewel* j2, float x_speed, float y_speed)
+{
+    set_jewel_motion(j1, x_speed, y_speed);
+    set_jewel_motion(j2, -x_speed, -y_speed);
+
+    vec2 aux_position = j1->proper;
+    set_jewel_position(j1, j2->proper);
+    set_jewel_position(j2, aux_position);
+    swap_jewels_types(j1, j2);
 }
 
 /*updates position of specified jewel
@@ -820,6 +870,26 @@ int initialize_jewel_structure(jmat *mat){
     return 1;
 }
 
+void sort_jewels(jmat* mat,int swap_num)
+{
+    int position;
+    vec2 rowcol1;
+    vec2 rowcol2;
+    for (int i=0; i<swap_num; i++)
+    {
+        position = rand()%64;
+        rowcol1.row = (int)(position/8);
+        rowcol1.col = (int)(position%8);
+
+        position = rand()%64;
+        rowcol2.row = (int)(position/8);
+        rowcol2.col = (int)(position%8);
+
+        swap_jewels_types(&(mat->jewels[rowcol1.row][rowcol1.col]), &(mat->jewels[rowcol2.row][rowcol2.col]));
+    }
+
+}
+
 
 int main()
 {
@@ -839,6 +909,8 @@ int main()
 
     must_init(al_init_image_addon(),"addon de imagem");
     must_init(al_init(), "allegro");
+    must_init(al_init_font_addon(), "addon de fonte");
+    must_init(al_init_ttf_addon(), "addon ttf");
     must_init(al_init_primitives_addon(), "addon de primitivas");
 
     ALLEGRO_DISPLAY* disp = al_create_display(SC_W, SC_H);
@@ -855,7 +927,8 @@ int main()
     ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
     must_init(queue, "queue");
 
-    ALLEGRO_FONT* font = al_create_builtin_font();
+    //ALLEGRO_FONT* font = al_create_builtin_font();
+    ALLEGRO_FONT* font = al_load_ttf_font("./files/CenturyGothicFett.ttf", 26, 0);
     must_init(font, "fonte");
 
     ALLEGRO_AUDIO_STREAM *bg_song = NULL;
@@ -953,6 +1026,8 @@ int main()
     int player_swap = 0;
     int init = 0;
     int state = JEWEL;
+    int new_lev_frames = 0; //amount of frames spent on new level state
+    int next_level_score = 100;
 
     int render = 0;
     while (1){
@@ -961,7 +1036,7 @@ int main()
         if(event.type == ALLEGRO_EVENT_TIMER)
             render = 1;
 
-        if((event.type == ALLEGRO_EVENT_DISPLAY_CLOSE))
+        if(event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
             break;
 
         if (event.type == ALLEGRO_EVENT_KEY_DOWN){
@@ -994,27 +1069,27 @@ int main()
             case INPUT:
                 //process input
                 if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN)
-                    if ( register_user_input(&event, &mat, &selected) ){
+                    if ( register_user_input(&event, &mat, &selected) )
                         state = SWAP;
-                    }
                 break;
             case SWAP:
-                if(event.type == ALLEGRO_EVENT_TIMER){ //make it frame rate consistent
-                    moving = update_jewel(mat.swap1);
-                    moving = (update_jewel(mat.swap2) || moving);
+                if(event.type == ALLEGRO_EVENT_TIMER)
+                { //make it frame rate consistent
+                    //moving = update_jewel(mat.swap1);
+                    //moving = (update_jewel(mat.swap2) || moving);
+                    update_jewel(mat.swap1);
+                    moving = update_jewel(mat.swap2);
 
                     if (!moving){
                         //keep in mind swap1 must be initialized
                         if ( mat.swap2 && ((mat.swap1->power == DIAMOND) || (mat.swap2->power == DIAMOND)) ){
                             if (mat.swap1->power == DIAMOND){
-                                mat.swap1->power = NONE;
-                                mat.swap1->type = EMPTY;
-                                diamond_destroyer(&mat, mat.swap2->type);
+                                vec2 rowcol = get_rowcol(mat.swap1->proper.x, mat.swap1->proper.y, &mat);
+                                destroy_jewel(&mat, rowcol.row, rowcol.col, mat.swap2->type);
                             }
                             else{
-                                mat.swap2->power = NONE;
-                                mat.swap2->type = EMPTY;
-                                diamond_destroyer(&mat, mat.swap1->type);
+                                vec2 rowcol = get_rowcol(mat.swap2->proper.x, mat.swap2->proper.y, &mat);
+                                destroy_jewel(&mat, rowcol.row, rowcol.col, mat.swap1->type);
                             }
                             set_falling(&mat); //sets jewels downward motion and creates new jewels
                             state = DROP;
@@ -1033,11 +1108,30 @@ int main()
                 case DROP:
                     if(event.type == ALLEGRO_EVENT_TIMER){
                         moving = update_all_jewels(&mat);
-                        if (!moving)
-                            state = JEWEL;
+
+                        if (!moving){
+                            if ( mat.score >= next_level_score  ){
+                                state = NEW_LEVEL;
+                                next_level_score += 2*next_level_score;
+                            }
+                            else
+                                state = JEWEL;
+                        }
+
                     }
                 break;
                 case PAUSE:
+                break;
+                case NEW_LEVEL:
+                    if (event.type == ALLEGRO_EVENT_TIMER)
+                    {
+                        sort_jewels(&mat, SORTED_PER_FRAME);
+                        new_lev_frames++;
+                        if (new_lev_frames == NEW_LEVEL_TIMER){
+                            new_lev_frames = 0;
+                            state  = JEWEL;
+                        }
+                    }
                 break;
                 case END_GAME:
                     printf("\rperdeu playboy");
@@ -1103,9 +1197,9 @@ int main()
             al_draw_filled_rectangle(mat.pos.x, mat.pos.y-200,
                     mat.pos.x+(COL_QT*JEWEL_SIZE), mat.pos.y, al_map_rgb(0,0,0) );
 
-            char score_text[11];
-            sprintf(score_text, "%010d", mat.score);
-            al_draw_text(font, al_map_rgb(255,255,255), 10, 20, 0, score_text);
+            char score_text[19];
+            sprintf(score_text, "%09d/%09d", mat.score, next_level_score);
+            al_draw_text(font, al_map_rgb(255,255,255), 20, 10, 0, score_text);
 
             //draw loading screen
             //if (!init){
@@ -1115,7 +1209,7 @@ int main()
             //else if(state == PAUSE){
             if(state == PAUSE){
                 al_draw_filled_rectangle(0,0,SC_W,SC_H,al_map_rgba(10, 90, 170, 90));
-                al_draw_text(font, al_map_rgb(255,255,255), (int)(SC_W/2)-20, (int)(SC_H/2)-20, 0, "PAUSE");
+                al_draw_text(font, al_map_rgb(255,255,255), (int)(SC_W/2)-45, (int)(SC_H/2)-20, 0, "PAUSE");
             }
 
             //draw end game screen
