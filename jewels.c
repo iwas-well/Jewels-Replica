@@ -942,7 +942,7 @@ int main()
     FILE* score_file;
 
     //le arquivo e atualiza best_score
-    score_file = fopen("./files/score_file.txt","r"); 
+    score_file = fopen("./resources/files/score_file.txt","r"); 
     must_init(score_file, "arquivo de score");
     int best_score = 0;
     fread(&best_score, sizeof(int), 1, score_file);
@@ -974,19 +974,21 @@ int main()
     must_init(queue, "queue");
 
     //ALLEGRO_FONT* score_font = al_create_builtin_font();
-    ALLEGRO_FONT* score_font = al_load_ttf_font("./files/CenturyGothicFett.ttf", 26, 0);
+    ALLEGRO_FONT* score_font = al_load_ttf_font("./resources/files/CenturyGothicFett.ttf", 26, 0);
     must_init(score_font, "fonte do score");
-    ALLEGRO_FONT* game_font = al_load_ttf_font("./files/CenturyGothicFett.ttf", 35, 0);
+    ALLEGRO_FONT* game_font = al_load_ttf_font("./resources/files/CenturyGothicFett.ttf", 35, 0);
     must_init(game_font, "fonte do jogo");
 
 
     //************************************************************//
     //load sound files
     ALLEGRO_SAMPLE *bg_sound = NULL; 
+    ALLEGRO_SAMPLE *swap_sound = NULL; 
     ALLEGRO_SAMPLE *pause_sound = NULL; 
     ALLEGRO_SAMPLE *destroy_sound = NULL; 
     ALLEGRO_SAMPLE *next_level_sound = NULL; 
     ALLEGRO_SAMPLE_INSTANCE *bg_sound_inst = NULL; 
+    ALLEGRO_SAMPLE_INSTANCE *swap_sound_inst = NULL; 
     ALLEGRO_SAMPLE_INSTANCE *pause_sound_inst = NULL; 
     ALLEGRO_SAMPLE_INSTANCE *destroy_sound_inst = NULL; 
     ALLEGRO_SAMPLE_INSTANCE *next_level_sound_inst = NULL; 
@@ -995,35 +997,45 @@ int main()
     al_init_acodec_addon();
     al_reserve_samples(1);
 
-    bg_sound = al_load_sample("./audio/Howls_Moving_Castle.ogg");    	
-    pause_sound = al_load_sample("./audio/pause.ogg");    	
-    //destroy_sound = al_load_sample("./audio/destroy.ogg");    	
-    next_level_sound = al_load_sample("./audio/next_level.ogg");    	
+    bg_sound = al_load_sample("./resources/audio/Howls_Moving_Castle.ogg");    	
+    swap_sound = al_load_sample("./resources/audio/swap.ogg");    	
+    pause_sound = al_load_sample("./resources/audio/pause.ogg");    	
+    destroy_sound = al_load_sample("./resources/audio/destroy.ogg");    	
+    next_level_sound = al_load_sample("./resources/audio/next_level.ogg");    	
 
     must_init(bg_sound,"musica de fundo");
+    must_init(swap_sound,"musica de swap");
     must_init(pause_sound,"som de pausa");
-    //must_init(destroy_sound,"som de destruicao");
+    must_init(destroy_sound,"som de destruicao");
     must_init(next_level_sound,"musica de proximo nivel");
-    //al_play_sample(bg_sound, 0.5, 0, 1, ALLEGRO_PLAYMODE_LOOP,NULL);
 
     bg_sound_inst = al_create_sample_instance(bg_sound);
+    swap_sound_inst = al_create_sample_instance(swap_sound);
     pause_sound_inst = al_create_sample_instance(pause_sound);
+    destroy_sound_inst = al_create_sample_instance(destroy_sound);
     next_level_sound_inst = al_create_sample_instance(next_level_sound);
-    //destroy_sound_inst = al_create_sample_instance(destroy_sound);
+
     al_attach_sample_instance_to_mixer(bg_sound_inst, al_get_default_mixer());
+    al_attach_sample_instance_to_mixer(swap_sound_inst, al_get_default_mixer());
     al_attach_sample_instance_to_mixer(pause_sound_inst, al_get_default_mixer());
+    al_attach_sample_instance_to_mixer(destroy_sound_inst, al_get_default_mixer());
     al_attach_sample_instance_to_mixer(next_level_sound_inst, al_get_default_mixer());
-    //al_attach_sample_instance_to_mixer(destroy_sound_inst, al_get_default_mixer());
-    
-    al_set_sample_instance_playmode(bg_sound_inst, ALLEGRO_PLAYMODE_LOOP);
-    //al_set_sample_instance_gain(bg_sound_inst, 0.8);
-    al_play_sample_instance(bg_sound_inst);
-
-    al_set_sample_instance_speed(next_level_sound_inst, 0.9);
-
 
     int bg_sound_pos = 0;
     int next_level_sound_pos = 0;
+    
+    //setagem de opcoes das instancias
+    al_set_sample_instance_playmode(bg_sound_inst, ALLEGRO_PLAYMODE_LOOP);
+    al_set_sample_instance_gain(bg_sound_inst, 0.8);
+    al_play_sample_instance(bg_sound_inst);
+
+    al_set_sample_instance_speed(destroy_sound_inst, 1.2);
+    al_set_sample_instance_gain(destroy_sound_inst, 0.7);
+
+    al_set_sample_instance_speed(swap_sound_inst, 0.5);
+
+    al_set_sample_instance_speed(next_level_sound_inst, 0.9);
+
     //************************************************************//
 
 
@@ -1031,13 +1043,13 @@ int main()
     //************************************************************//
     //load game images
     ALLEGRO_BITMAP* jewel_image[7];
-    jewel_image[BLUE] = al_load_bitmap("./sprites/blue.png");
-    jewel_image[RED] = al_load_bitmap("./sprites/red.png");
-    jewel_image[YELLOW] = al_load_bitmap("./sprites/yellow.png");
-    jewel_image[GREEN] = al_load_bitmap("./sprites/green.png");
-    jewel_image[GREY] = al_load_bitmap("./sprites/grey.png");
-    jewel_image[PURPLE] = al_load_bitmap("./sprites/purple.png");
-    jewel_image[WHITE] = al_load_bitmap("./sprites/white.png");
+    jewel_image[BLUE] = al_load_bitmap("./resources/sprites/blue.png");
+    jewel_image[RED] = al_load_bitmap("./resources/sprites/red.png");
+    jewel_image[YELLOW] = al_load_bitmap("./resources/sprites/yellow.png");
+    jewel_image[GREEN] = al_load_bitmap("./resources/sprites/green.png");
+    jewel_image[GREY] = al_load_bitmap("./resources/sprites/grey.png");
+    jewel_image[PURPLE] = al_load_bitmap("./resources/sprites/purple.png");
+    jewel_image[WHITE] = al_load_bitmap("./resources/sprites/white.png");
     //test loaded images
     for (int i = 0; i < 7; i++)
         if (!jewel_image[i]){
@@ -1045,12 +1057,12 @@ int main()
             exit(1);
         }
     ALLEGRO_BITMAP* jewel_star_image[6];
-    jewel_star_image[BLUE] = al_load_bitmap("./sprites/blue_star.png");
-    jewel_star_image[RED] = al_load_bitmap("./sprites/red_star.png");
-    jewel_star_image[YELLOW] = al_load_bitmap("./sprites/yellow_star.png");
-    jewel_star_image[GREEN] = al_load_bitmap("./sprites/green_star.png");
-    jewel_star_image[GREY] = al_load_bitmap("./sprites/grey_star.png");
-    jewel_star_image[PURPLE] = al_load_bitmap("./sprites/purple_star.png");
+    jewel_star_image[BLUE] = al_load_bitmap("./resources/sprites/blue_star.png");
+    jewel_star_image[RED] = al_load_bitmap("./resources/sprites/red_star.png");
+    jewel_star_image[YELLOW] = al_load_bitmap("./resources/sprites/yellow_star.png");
+    jewel_star_image[GREEN] = al_load_bitmap("./resources/sprites/green_star.png");
+    jewel_star_image[GREY] = al_load_bitmap("./resources/sprites/grey_star.png");
+    jewel_star_image[PURPLE] = al_load_bitmap("./resources/sprites/purple_star.png");
     //test loaded images
     for (int i = 0; i < 6; i++)
         if (!jewel_star_image[i]){
@@ -1058,12 +1070,12 @@ int main()
             exit(1);
         }
     ALLEGRO_BITMAP* jewel_square_image[6];
-    jewel_square_image[BLUE] = al_load_bitmap("./sprites/blue_square.png");
-    jewel_square_image[RED] = al_load_bitmap("./sprites/red_square.png");
-    jewel_square_image[YELLOW] = al_load_bitmap("./sprites/yellow_square.png");
-    jewel_square_image[GREEN] = al_load_bitmap("./sprites/green_square.png");
-    jewel_square_image[GREY] = al_load_bitmap("./sprites/grey_square.png");
-    jewel_square_image[PURPLE] = al_load_bitmap("./sprites/purple_square.png");
+    jewel_square_image[BLUE] = al_load_bitmap("./resources/sprites/blue_square.png");
+    jewel_square_image[RED] = al_load_bitmap("./resources/sprites/red_square.png");
+    jewel_square_image[YELLOW] = al_load_bitmap("./resources/sprites/yellow_square.png");
+    jewel_square_image[GREEN] = al_load_bitmap("./resources/sprites/green_square.png");
+    jewel_square_image[GREY] = al_load_bitmap("./resources/sprites/grey_square.png");
+    jewel_square_image[PURPLE] = al_load_bitmap("./resources/sprites/purple_square.png");
     //test loaded images
     for (int i = 0; i < 6; i++)
         if (!jewel_square_image[i]){
@@ -1072,23 +1084,23 @@ int main()
         }
 
     ALLEGRO_BITMAP* load_screen;
-    load_screen = al_load_bitmap("./sprites/load_screen.png");
+    load_screen = al_load_bitmap("./resources/sprites/load_screen.png");
     must_init(load_screen,"imagem de loading");
 
     ALLEGRO_BITMAP* transparent_screen;
-    transparent_screen = al_load_bitmap("./sprites/transparent_screen.png");
+    transparent_screen = al_load_bitmap("./resources/sprites/transparent_screen.png");
     must_init(transparent_screen,"imagem de fim de jogo");
 
     ALLEGRO_BITMAP* bg_image;
-    bg_image = al_load_bitmap("./sprites/bg_image.png");
+    bg_image = al_load_bitmap("./resources/sprites/bg_image.png");
     must_init(bg_image,"imagem de background");
 
     ALLEGRO_BITMAP* matrix_image;
-    matrix_image = al_load_bitmap("./sprites/matriz_bg.png");
+    matrix_image = al_load_bitmap("./resources/sprites/matriz_bg.png");
     must_init(matrix_image,"imagem de background da matriz");
 
     ALLEGRO_BITMAP* help_image;
-    help_image = al_load_bitmap("./sprites/help_image.png");
+    help_image = al_load_bitmap("./resources/sprites/help_image.png");
     must_init(matrix_image,"imagem da help page");
     //************************************************************//
 
@@ -1227,13 +1239,13 @@ int main()
             case JEWEL:
 
                 if ( set_to_destroy_matched_jewels(&mat) ){
-                    //if (al_get_sample_instance_playing(destroy_sound_inst))
-                    //    al_stop_sample_instance(destroy_sound_inst);
-                    //al_play_sample_instance(destroy_sound_inst);
+                    if (al_get_sample_instance_playing(destroy_sound_inst))
+                        al_stop_sample_instance(destroy_sound_inst);
+                    al_play_sample_instance(destroy_sound_inst);
                     
                     //atualiza arquivo com best score
                     if (mat.score > best_score){
-                        score_file = fopen("./files/score_file.txt","w"); 
+                        score_file = fopen("./resources/files/score_file.txt","w"); 
                         must_init(score_file, "arquivo de score");
                         fwrite(&mat.score, sizeof(int), 1, score_file);
                         fclose(score_file);
@@ -1267,8 +1279,12 @@ int main()
             case INPUT:
                 //process input
                 if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN)
-                    if ( register_user_input(&event, &mat, &selected) )
+                    if ( register_user_input(&event, &mat, &selected) ){
+                        if (al_get_sample_instance_playing(swap_sound_inst))
+                            al_stop_sample_instance(swap_sound_inst);
+                        al_play_sample_instance(swap_sound_inst);
                         state = SWAP;
+                    }
                 break;
             case SWAP:
                 if(event.type == ALLEGRO_EVENT_TIMER)
@@ -1468,11 +1484,15 @@ int main()
     al_destroy_display(disp);
     al_destroy_timer(timer);
     al_destroy_event_queue(queue);
+
     al_destroy_sample(bg_sound);
+    al_destroy_sample(swap_sound);
     al_destroy_sample(pause_sound);
     al_destroy_sample(destroy_sound);
     al_destroy_sample(next_level_sound);
+
     al_destroy_sample_instance(bg_sound_inst);
+    al_destroy_sample_instance(swap_sound_inst);
     al_destroy_sample_instance(pause_sound_inst);
     al_destroy_sample_instance(destroy_sound_inst);
     al_destroy_sample_instance(next_level_sound_inst);
