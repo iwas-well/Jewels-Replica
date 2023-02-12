@@ -1031,19 +1031,20 @@ int main()
     
     //setagem de opcoes das instancias
     al_set_sample_instance_playmode(bg_sound_inst, ALLEGRO_PLAYMODE_LOOP);
-    al_set_sample_instance_gain(bg_sound_inst, 0.8);
+    al_set_sample_instance_gain(bg_sound_inst, 0.6);
     al_play_sample_instance(bg_sound_inst);
 
     al_set_sample_instance_playmode(treasure_sound_inst, ALLEGRO_PLAYMODE_LOOP);
-    al_set_sample_instance_gain(treasure_sound_inst, 1);
+    al_set_sample_instance_gain(treasure_sound_inst, 0.7);
 
     al_set_sample_instance_speed(destroy_sound_inst, 0.6);
-    al_set_sample_instance_gain(destroy_sound_inst, 0.8);
+    al_set_sample_instance_gain(destroy_sound_inst, 0.7);
 
     al_set_sample_instance_speed(swap_sound_inst, 0.7);
     al_set_sample_instance_gain(swap_sound_inst, 0.7);
 
     al_set_sample_instance_speed(next_level_sound_inst, 0.9);
+    al_set_sample_instance_gain(next_level_sound_inst, 0.6);
 
     //************************************************************//
 
@@ -1184,8 +1185,9 @@ int main()
                             al_stop_sample_instance(pause_sound_inst);
                         al_play_sample_instance(pause_sound_inst);
 
-                        //stops easteregg
+                        //stops easteregg song
                         al_stop_sample_instance(treasure_sound_inst);
+
                         //saves audio position and stops it
                         bg_sound_pos = al_get_sample_instance_position(bg_sound_inst);
                         al_stop_sample_instance(bg_sound_inst);
@@ -1224,8 +1226,9 @@ int main()
                             al_stop_sample_instance(pause_sound_inst);
                         al_play_sample_instance(pause_sound_inst);
 
-                        //stops easteregg
+                        //stops easteregg song
                         al_stop_sample_instance(treasure_sound_inst);
+                         
                         //saves audio position and stops it
                         bg_sound_pos = al_get_sample_instance_position(bg_sound_inst);
                         al_stop_sample_instance(bg_sound_inst);
@@ -1396,7 +1399,7 @@ int main()
                 //if one jewel is selected, draw a hint around it
                 if (selected) 
                     al_draw_filled_rounded_rectangle(mat.swap1->proper.x, mat.swap1->proper.y,
-                            mat.swap1->proper.x+JEWEL_SIZE, mat.swap1->proper.y+JEWEL_SIZE, 15, 15, al_map_rgba(30,30,30, 100));
+                            mat.swap1->proper.x+JEWEL_SIZE, mat.swap1->proper.y+JEWEL_SIZE, 15, 15, al_map_rgba(35,35,60, 100));
 
                 //draw jewel
                 for (int i = 0; i< ROW_QT; i++)
