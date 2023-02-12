@@ -15,7 +15,6 @@
 //  refactor code
 //  rock
 //  destruction animation
-//  easteregg
 
 //game configuration
 //#define SC_W        1300 //screen width
@@ -986,11 +985,13 @@ int main()
     ALLEGRO_SAMPLE *swap_sound = NULL; 
     ALLEGRO_SAMPLE *pause_sound = NULL; 
     ALLEGRO_SAMPLE *destroy_sound = NULL; 
+    ALLEGRO_SAMPLE *treasure_sound = NULL; 
     ALLEGRO_SAMPLE *next_level_sound = NULL; 
     ALLEGRO_SAMPLE_INSTANCE *bg_sound_inst = NULL; 
     ALLEGRO_SAMPLE_INSTANCE *swap_sound_inst = NULL; 
     ALLEGRO_SAMPLE_INSTANCE *pause_sound_inst = NULL; 
     ALLEGRO_SAMPLE_INSTANCE *destroy_sound_inst = NULL; 
+    ALLEGRO_SAMPLE_INSTANCE *treasure_sound_inst = NULL; 
     ALLEGRO_SAMPLE_INSTANCE *next_level_sound_inst = NULL; 
     al_init();
     al_install_audio();
@@ -1001,24 +1002,28 @@ int main()
     swap_sound = al_load_sample("./resources/audio/swap.ogg");    	
     pause_sound = al_load_sample("./resources/audio/pause.ogg");    	
     destroy_sound = al_load_sample("./resources/audio/destroy.ogg");    	
+    treasure_sound = al_load_sample("./resources/audio/treasure.ogg");    	
     next_level_sound = al_load_sample("./resources/audio/next_level.ogg");    	
 
     must_init(bg_sound,"musica de fundo");
     must_init(swap_sound,"musica de swap");
     must_init(pause_sound,"som de pausa");
     must_init(destroy_sound,"som de destruicao");
+    must_init(treasure_sound,"som de easteregg");
     must_init(next_level_sound,"musica de proximo nivel");
 
     bg_sound_inst = al_create_sample_instance(bg_sound);
     swap_sound_inst = al_create_sample_instance(swap_sound);
     pause_sound_inst = al_create_sample_instance(pause_sound);
     destroy_sound_inst = al_create_sample_instance(destroy_sound);
+    treasure_sound_inst = al_create_sample_instance(treasure_sound);
     next_level_sound_inst = al_create_sample_instance(next_level_sound);
 
     al_attach_sample_instance_to_mixer(bg_sound_inst, al_get_default_mixer());
     al_attach_sample_instance_to_mixer(swap_sound_inst, al_get_default_mixer());
     al_attach_sample_instance_to_mixer(pause_sound_inst, al_get_default_mixer());
     al_attach_sample_instance_to_mixer(destroy_sound_inst, al_get_default_mixer());
+    al_attach_sample_instance_to_mixer(treasure_sound_inst, al_get_default_mixer());
     al_attach_sample_instance_to_mixer(next_level_sound_inst, al_get_default_mixer());
 
     int bg_sound_pos = 0;
@@ -1029,10 +1034,14 @@ int main()
     al_set_sample_instance_gain(bg_sound_inst, 0.8);
     al_play_sample_instance(bg_sound_inst);
 
-    al_set_sample_instance_speed(destroy_sound_inst, 1.2);
-    al_set_sample_instance_gain(destroy_sound_inst, 0.7);
+    al_set_sample_instance_playmode(treasure_sound_inst, ALLEGRO_PLAYMODE_LOOP);
+    al_set_sample_instance_gain(treasure_sound_inst, 1);
 
-    al_set_sample_instance_speed(swap_sound_inst, 0.5);
+    al_set_sample_instance_speed(destroy_sound_inst, 0.6);
+    al_set_sample_instance_gain(destroy_sound_inst, 0.8);
+
+    al_set_sample_instance_speed(swap_sound_inst, 0.7);
+    al_set_sample_instance_gain(swap_sound_inst, 0.7);
 
     al_set_sample_instance_speed(next_level_sound_inst, 0.9);
 
@@ -1124,6 +1133,7 @@ int main()
     int next_level_score = FIRST_SCORE_GOAL;
     int framerate_divisor = 0;
     int close_game = 0;
+    int mistakes = 0;
 
     int render = 0;
     while (1){
@@ -1174,6 +1184,8 @@ int main()
                             al_stop_sample_instance(pause_sound_inst);
                         al_play_sample_instance(pause_sound_inst);
 
+                        //stops easteregg
+                        al_stop_sample_instance(treasure_sound_inst);
                         //saves audio position and stops it
                         bg_sound_pos = al_get_sample_instance_position(bg_sound_inst);
                         al_stop_sample_instance(bg_sound_inst);
@@ -1212,6 +1224,8 @@ int main()
                             al_stop_sample_instance(pause_sound_inst);
                         al_play_sample_instance(pause_sound_inst);
 
+                        //stops easteregg
+                        al_stop_sample_instance(treasure_sound_inst);
                         //saves audio position and stops it
                         bg_sound_pos = al_get_sample_instance_position(bg_sound_inst);
                         al_stop_sample_instance(bg_sound_inst);
@@ -1237,6 +1251,14 @@ int main()
         switch(state)
         {
             case JEWEL:
+
+                if (mistakes == 5){
+                    //play easteregg
+                    mistakes = 0;
+                    al_stop_sample_instance(bg_sound_inst);
+                    al_play_sample_instance(treasure_sound_inst);
+                }
+
 
                 if ( set_to_destroy_matched_jewels(&mat) ){
                     if (al_get_sample_instance_playing(destroy_sound_inst))
@@ -1289,8 +1311,6 @@ int main()
             case SWAP:
                 if(event.type == ALLEGRO_EVENT_TIMER)
                 { //make it frame rate consistent
-                    //moving = update_jewel(mat.swap1);
-                    //moving = (update_jewel(mat.swap2) || moving);
                     update_jewel(mat.swap1);
                     moving = update_jewel(mat.swap2);
 
@@ -1308,12 +1328,15 @@ int main()
                             set_falling(&mat); //sets jewels downward motion and creates new jewels
                             state = DROP;
                         }
-                        else if ( test_swap(&mat) )
+                        else if ( test_swap(&mat) ){
+                            mistakes = 0;
                             state = JEWEL;
+                        }
                         else{
+                            mistakes++;
                             //swap jewels
                             swap_jewels(mat.swap1, mat.swap2, mat.swap1->vel.x, mat.swap1->vel.y);
-                            state = DROP;
+                            state = DROP; //will update jewels unswapping;
                         }
                     }
 
@@ -1489,12 +1512,14 @@ int main()
     al_destroy_sample(swap_sound);
     al_destroy_sample(pause_sound);
     al_destroy_sample(destroy_sound);
+    al_destroy_sample(treasure_sound);
     al_destroy_sample(next_level_sound);
 
     al_destroy_sample_instance(bg_sound_inst);
     al_destroy_sample_instance(swap_sound_inst);
     al_destroy_sample_instance(pause_sound_inst);
     al_destroy_sample_instance(destroy_sound_inst);
+    al_destroy_sample_instance(treasure_sound_inst);
     al_destroy_sample_instance(next_level_sound_inst);
     //**************************************//
 
