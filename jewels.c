@@ -21,8 +21,8 @@
 //#define SC_H        750  //screen height
 #define SC_W        1000 //screen width
 #define SC_H        750  //screen height
-#define ROW_QT      8    //quantity of lines on the game matrix
-#define COL_QT      8    //quantity of columns on the game matrix
+#define ROW_QT      6    //quantity of lines on the game matrix
+#define COL_QT      6    //quantity of columns on the game matrix
 #define JEWEL_SIZE  65   //lenght of jewel slot
 #define VELOCITY    4    //jewel movement velocity
 #define FIRST_SCORE_GOAL    500
@@ -899,13 +899,13 @@ void sort_jewels(jmat* mat,int swap_num)
     vec2 rowcol2;
     for (int i=0; i<swap_num; i++)
     {
-        position = rand()%64;
-        rowcol1.row = (int)(position/8);
-        rowcol1.col = (int)(position%8);
+        position = rand()%(ROW_QT*COL_QT);
+        rowcol1.row = (int)(position/ROW_QT);
+        rowcol1.col = (int)(position%COL_QT);
 
-        position = rand()%64;
-        rowcol2.row = (int)(position/8);
-        rowcol2.col = (int)(position%8);
+        position = rand()%(ROW_QT*COL_QT);
+        rowcol2.row = (int)(position/ROW_QT);
+        rowcol2.col = (int)(position%COL_QT);
 
         swap_jewels_types(&(mat->jewels[rowcol1.row][rowcol1.col]), &(mat->jewels[rowcol2.row][rowcol2.col]));
     }
@@ -928,10 +928,6 @@ int main()
 
     mat.swap1 = NULL;
     mat.swap2 = NULL;
-
-    //al_set_new_display_flags(ALLEGRO_FULLSCREEN_WINDOW);
-    //al_set_new_display_flags(ALLEGRO_RESIZABLE);
-    //al_set_new_display_flags(ALLEGRO_MAXIMIZED);
 
     if ( !initialize_jewel_structure(&mat) )
         fprintf(stdin,"erro ao alocar matriz de joias\n");
@@ -1038,7 +1034,7 @@ int main()
     al_set_sample_instance_playmode(treasure_sound_inst, ALLEGRO_PLAYMODE_LOOP);
     al_set_sample_instance_gain(treasure_sound_inst, 0.7);
 
-    al_set_sample_instance_speed(destroy_sound_inst, 0.6);
+    al_set_sample_instance_speed(destroy_sound_inst, 0.3);
     al_set_sample_instance_gain(destroy_sound_inst, 0.7);
 
     al_set_sample_instance_speed(swap_sound_inst, 0.7);
@@ -1152,10 +1148,6 @@ int main()
         if (event.type == ALLEGRO_EVENT_KEY_DOWN){
             switch (event.keyboard.keycode)
             {
-                case ALLEGRO_KEY_ESCAPE:
-                    //close_game(mat);
-                    close_game = 1;
-                break;
                 case ALLEGRO_KEY_F1: //fallthrough
                 case ALLEGRO_KEY_H:
                     if (state == HELP_PAGE)
@@ -1199,6 +1191,7 @@ int main()
                         state = HELP_PAGE;
                     }
                 break;
+                case ALLEGRO_KEY_ESCAPE: //fallthrough
                 case ALLEGRO_KEY_SPACE:
                     if (state == PAUSE)
                     {//unpause game
@@ -1287,6 +1280,8 @@ int main()
                     else{
 
                         if ( mat.score >= next_level_score  ){
+                            if (al_get_sample_instance_playing(next_level_sound_inst))
+                                al_stop_sample_instance(next_level_sound_inst);
                             al_play_sample_instance(next_level_sound_inst);
 
                             level++;
@@ -1439,8 +1434,6 @@ int main()
                     }
 
                 //draw upper frame
-                //al_draw_filled_rectangle(mat.pos.x, mat.pos.y-200,
-                //        mat.pos.x+(COL_QT*JEWEL_SIZE), mat.pos.y, al_map_rgb(0,0,0) );
                 al_draw_bitmap(bg_image,0,0,0);
 
 
