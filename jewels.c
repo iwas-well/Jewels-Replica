@@ -356,11 +356,12 @@ int set_to_destroy_matched_jewels(jmat* mat)
                         else{
                             //se ja ha powerup na intercecao, troca por star e o coloca na ponta oposta
                             //talvez trocar futuramente pelo inicio da coluna
-                            int aux_power = mat->jewels[row+k][col].new_power;
+                            mat->jewels[row+(seq-1)-k][col].new_type = mat->jewels[row+k][col].type;
+                            mat->jewels[row+(seq-1)-k][col].new_power = mat->jewels[row+k][col].new_power;
+                            //mat->jewels[row+(seq-1)-k][col].new_power = aux_power;
+
                             //buscar peca vazia na sequencia?    
                             mat->jewels[row+k][col].new_power = STAR;
-                            mat->jewels[row+(seq-1)-k][col].new_type = mat->jewels[row+(seq-1)-k][col].type;
-                            mat->jewels[row+(seq-1)-k][col].new_power = aux_power;
                         }
                         mat->jewels[row+k][col].new_type = mat->jewels[row+k][col].type;
                     }
