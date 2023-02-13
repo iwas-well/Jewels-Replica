@@ -21,8 +21,8 @@
 //#define SC_H        750  //screen height
 #define SC_W        1000 //screen width
 #define SC_H        750  //screen height
-#define ROW_QT      6    //quantity of lines on the game matrix
-#define COL_QT      6    //quantity of columns on the game matrix
+#define ROW_QT      8    //quantity of lines on the game matrix
+#define COL_QT      8    //quantity of columns on the game matrix
 #define JEWEL_SIZE  65   //lenght of jewel slot
 #define VELOCITY    4    //jewel movement velocity
 #define FIRST_SCORE_GOAL    500
@@ -1115,6 +1115,7 @@ int main()
     al_register_event_source(queue, al_get_keyboard_event_source());
     al_register_event_source(queue, al_get_timer_event_source(timer));
     al_register_event_source(queue, al_get_mouse_event_source());
+    al_register_event_source(queue, al_get_display_event_source(disp));
 
     ALLEGRO_EVENT event;
     int cont = 0;
@@ -1140,8 +1141,8 @@ int main()
         if(event.type == ALLEGRO_EVENT_TIMER)
             render = 1;
 
-        //if(event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
-        //    break;
+        if(event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
+            close_game = 1;
 
         //**************************************//
         //state independent keyboard input
