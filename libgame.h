@@ -14,7 +14,7 @@
 #define COL_QT      8    //quantity of columns on the game matrix
 #define JEWEL_SIZE  65   //lenght of jewel slot
 #define VELOCITY    4    //jewel movement velocity
-#define FIRST_SCORE_GOAL    200
+#define FIRST_SCORE_GOAL    300
 #define NEW_LEVEL_TIMER     30 //num of iterations on new level state
 #define SORTED_PER_FRAME    5  //num of swappings per frame on new level state
 #define NEW_LEVEL_SLOW_DOWN 3  //amount of times new level state is slown by
