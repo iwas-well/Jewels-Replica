@@ -16,6 +16,8 @@
 int main()
 {
     game_struct mat;
+
+    //could be in initialize_jewel_structure
     mat.pos.x = (SC_W - COL_QT*JEWEL_SIZE)/2;
     mat.pos.y = (SC_H - ROW_QT*JEWEL_SIZE)/2;
     mat.swap1 = NULL;
@@ -24,6 +26,7 @@ int main()
     if ( !initialize_jewel_structure(&mat) )
         fprintf(stdin,"erro ao alocar matriz de joias\n");
 
+    initialize_allegro_dependencies(&mat);
 
     //************************************************************//
     //load arquivo de score
@@ -35,8 +38,7 @@ int main()
     int best_score = 0;
     fread(&best_score, sizeof(int), 1, score_file);
     fclose(score_file);
-
-    initialize_allegro_dependencies(&mat);
+    //************************************************************//
 
     //could be in game_struct
     int state = JEWEL;
@@ -396,6 +398,7 @@ int main()
     //**************************************//
     deallocate_allegro_structures(&mat);
     //**************************************//
+    free(mat.jewels);
 
     return 0;
 }
