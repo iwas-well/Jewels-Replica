@@ -1,3 +1,8 @@
+#ifndef __JMOVEMENT__
+#define __JMOVEMENT__
+
+#include "structs.h"
+#include "allegro_dependecies.h"
 #include "libgame.h"
 
 /*sets empty jewels new types and sets their downward motion*/
@@ -22,3 +27,5 @@ int update_jewel(jewel *jewel);
  * returns 0 if jewel's movement has ended
  * otherwise, returns 1*/
 int update_all_jewels(game_struct *mat);
+
+#endif

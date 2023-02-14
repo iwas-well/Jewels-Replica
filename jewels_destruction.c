@@ -1,3 +1,4 @@
+#include "jewels_destruction.h"
 
 void star_destroyer(game_struct* mat, int row, int col, int destroyer_type)
 {

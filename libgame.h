@@ -1,7 +1,11 @@
 #ifndef __libgame__
 #define __libgame__
 
+#include <stdlib.h>
+
 #include "structs.h"
+#include "allegro_dependecies.h"
+#include "jewels_movement.h"
 
 //game configuration
 #define SC_W        1000 //screen width

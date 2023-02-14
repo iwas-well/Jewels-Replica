@@ -1,3 +1,4 @@
+#include "jewels_movement.h"
 
 /*sets empty jewels new types and sets their downward motion*/
 void set_falling(game_struct* mat)

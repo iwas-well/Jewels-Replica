@@ -1,3 +1,4 @@
+#include "libgame.h"
 
 vec2 get_rowcol(int x, int y, game_struct* mat)
 {
