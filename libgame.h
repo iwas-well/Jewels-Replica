@@ -5,7 +5,7 @@
 
 #include "structs.h"
 #include "allegro_dependencies.h"
-//#include "jewels_movement.h"
+#include "jewels_movement.h"
 
 //game configuration
 #define SC_W        1000 //screen width
@@ -66,12 +66,6 @@ int test_row(game_struct *mat, int row);
 int test_col(game_struct *mat, int col);
 
 int test_swap(game_struct *mat);
-
-void set_jewel_motion(jewel* j1, float x_speed, float y_speed);
-
-void set_jewel_position(jewel* j1, vec2 new_current_position);
-
-void swap_jewels_types(jewel* j1, jewel* j2);
 
 //*swap jewels 'a' and 'b' types and set their velocity in opposit directions,
 // * x_speed y_speed being the x velocity and y velocity of jewel 'a'*/

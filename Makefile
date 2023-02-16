@@ -22,7 +22,7 @@ jewels_movement.o: jewels_movement.h allegro_dependencies.h libgame.h structs.h 
 jewels_destruction.o: jewels_destruction.h allegro_dependencies.h libgame.h structs.h jewels_destruction.c
 	$(CC) -c jewels_destruction.c
 
-libgame.o: libgame.h structs.h allegro_dependencies.h libgame.c
+libgame.o: jewels_movement.h libgame.h structs.h allegro_dependencies.h libgame.c
 	$(CC) -c libgame.c
 
 allegro_dependencies.o: allegro_dependencies.h libgame.h structs.h allegro_dependencies.c

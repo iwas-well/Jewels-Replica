@@ -9,7 +9,6 @@
 
 //todo:
 //  refactor code
-//  fix Makefile
 //  rock
 //  destruction animation
 
@@ -131,7 +130,7 @@ int main()
                         }
                         last_state = PAUSE;
                     }
-                    else if (state != HELP_PAGE)
+                    else if ((state != HELP_PAGE) && (state != END_GAME))
                     {//pause game
                         last_state = state;
 
@@ -267,7 +266,7 @@ int main()
                     }
                 break;
                 case NEW_LEVEL:
-                    if (mat.event.type == ALLEGRO_EVENT_TIMER && al_is_event_queue_empty(mat.queue))
+                    if (mat.event.type == ALLEGRO_EVENT_TIMER)
                     {
                         if (framerate_divisor == NEW_LEVEL_SLOW_DOWN){ 
                             //in every frame_divisor amount of frames:
@@ -285,7 +284,7 @@ int main()
                     }
                 break;
                 case WAIT:
-                    if (mat.event.type == ALLEGRO_EVENT_TIMER && al_is_event_queue_empty(mat.queue))
+                    if (mat.event.type == ALLEGRO_EVENT_TIMER)
                     {
                         if (count_frames == WAIT_FRAMES){ 
                             count_frames = 0;
@@ -360,7 +359,6 @@ int main()
                 //draw upper frame
                 al_draw_bitmap(mat.image.screen[BG_IMAGE],0,0,0);
 
-
                 //**************************************************************//
                 //draw UI
                 char score_text[19];
@@ -375,25 +373,22 @@ int main()
                 //**************************************************************//
 
 
-                if (state == NEW_LEVEL){
+                if ((state == NEW_LEVEL) || (last_state == NEW_LEVEL)){
                     //draw_new_level_screen(&game_images);
                     al_draw_bitmap(mat.image.screen[TRANSPARENT_IMAGE], 0, 0, 0);
                     al_draw_text(mat.font[GAME_FONT], al_map_rgb(255,255,255), (int)(SC_W/2)-90, SC_H-80, 0, "NEW LEVEL!");
                 }
+
+                if (state == END_GAME){
+                    //draw end game screen
+                    al_draw_bitmap(mat.image.screen[TRANSPARENT_IMAGE], 0, 0, 0);
+                    al_draw_text(mat.font[GAME_FONT], al_map_rgb(255,255,255), (int)(SC_W/2)-90, SC_H-80, 0, "YOU LOST");
+                }
                 else if(state == PAUSE){
-                    if (last_state == NEW_LEVEL){
-                        //draw_new_level_screen(&game_images);
-                        al_draw_bitmap(mat.image.screen[TRANSPARENT_IMAGE], 0, 0, 0);
-                        al_draw_text(mat.font[GAME_FONT], al_map_rgb(255,255,255), (int)(SC_W/2)-90, SC_H-80, 0, "NEW LEVEL!");
-                    }
                     al_draw_bitmap(mat.image.screen[TRANSPARENT_IMAGE], 0, 0, 0);
                     al_draw_text(mat.font[GAME_FONT], al_map_rgb(255,255,255), (int)(SC_W/2)-53, (int)(SC_H/2)-20, 0, "PAUSE");
                 }
-                else if (state == END_GAME){
-                    //draw end game screen
-                    al_draw_bitmap(mat.image.screen[TRANSPARENT_IMAGE], 0, 0, 0);
-                    al_draw_text(mat.font[GAME_FONT], al_map_rgb(255,255,255), (int)(SC_W/2)-90, (int)(SC_H/2)-20, 0, "YOU LOST");
-                }
+
 
                 
                 al_flip_display();
@@ -401,6 +396,7 @@ int main()
             render = 0;
         }
         //**************************************//
+        
     }
 
     //**************************************//

@@ -64,11 +64,13 @@ int initialize_allegro_dependencies(game_struct* game_st)
     must_init(al_set_system_mouse_cursor(game_st->disp, ALLEGRO_SYSTEM_MOUSE_CURSOR_DEFAULT), "mouse");
     //************************************************************//
     
+    //************************************************************//
     //load fonts
     game_st->font[SCORE_FONT] = al_load_ttf_font("./resources/files/CenturyGothicFett.ttf", 26, 0);
     must_init(game_st->font[SCORE_FONT], "fonte do score");
     game_st->font[GAME_FONT] = al_load_ttf_font("./resources/files/CenturyGothicFett.ttf", 35, 0);
     must_init(game_st->font[GAME_FONT], "fonte do jogo");
+    //************************************************************//
 
 
     game_st->timer = al_create_timer(1.0 / 60.0);
@@ -120,7 +122,7 @@ int initialize_allegro_dependencies(game_struct* game_st)
     al_set_sample_instance_playmode(game_st->audio.sample_inst[TREASURE_AUDIO], ALLEGRO_PLAYMODE_LOOP);
     al_set_sample_instance_gain(game_st->audio.sample_inst[TREASURE_AUDIO], 0.7);
 
-    al_set_sample_instance_speed(game_st->audio.sample_inst[DESTROY_AUDIO], 0.3);
+    al_set_sample_instance_speed(game_st->audio.sample_inst[DESTROY_AUDIO], 0.6);
     al_set_sample_instance_gain(game_st->audio.sample_inst[DESTROY_AUDIO], 0.7);
 
     al_set_sample_instance_speed(game_st->audio.sample_inst[SWAP_AUDIO], 0.7);

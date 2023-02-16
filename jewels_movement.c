@@ -54,45 +54,45 @@ void set_falling(game_struct* mat)
             mat->jewels[i][j].lower = 0;
 }
 
-//void set_jewel_motion(jewel* j1, float x_speed, float y_speed)
-//{
-//    j1->vel.x = x_speed;
-//    j1->vel.y = y_speed;
-//}
-//
-//void set_jewel_position(jewel* j1, vec2 new_current_position)
-//{
-//    j1->current.x = new_current_position.x;
-//    j1->current.y = new_current_position.y;
-//}
+void set_jewel_motion(jewel* j1, float x_speed, float y_speed)
+{
+    j1->vel.x = x_speed;
+    j1->vel.y = y_speed;
+}
 
-//void swap_jewels_types(jewel* j1, jewel* j2)
-//{
-//    //swap types
-//    j_type aux_type;
-//    aux_type = j1->type;
-//    j1->type = j2->type; 
-//    j2->type = aux_type; 
-//
-//    //swap power
-//    j_type aux_power;
-//    aux_power = j1->power;
-//    j1->power = j2->power; 
-//    j2->power = aux_power; 
-//}
-//
-///*swap jewels 'a' and 'b' types and set their velocity in opposit directions,
-// * x_speed y_speed being the x velocity and y velocity of jewel 'a'*/
-//void swap_jewels(jewel* j1, jewel* j2, float x_speed, float y_speed)
-//{
-//    set_jewel_motion(j1, x_speed, y_speed);
-//    set_jewel_motion(j2, -x_speed, -y_speed);
-//
-//    vec2 aux_position = j1->proper;
-//    set_jewel_position(j1, j2->proper);
-//    set_jewel_position(j2, aux_position);
-//    swap_jewels_types(j1, j2);
-//}
+void set_jewel_position(jewel* j1, vec2 new_current_position)
+{
+    j1->current.x = new_current_position.x;
+    j1->current.y = new_current_position.y;
+}
+
+void swap_jewels_types(jewel* j1, jewel* j2)
+{
+    //swap types
+    j_type aux_type;
+    aux_type = j1->type;
+    j1->type = j2->type; 
+    j2->type = aux_type; 
+
+    //swap power
+    j_type aux_power;
+    aux_power = j1->power;
+    j1->power = j2->power; 
+    j2->power = aux_power; 
+}
+
+/*swap jewels 'a' and 'b' types and set their velocity in opposit directions,
+ * x_speed y_speed being the x velocity and y velocity of jewel 'a'*/
+void swap_jewels(jewel* j1, jewel* j2, float x_speed, float y_speed)
+{
+    set_jewel_motion(j1, x_speed, y_speed);
+    set_jewel_motion(j2, -x_speed, -y_speed);
+
+    vec2 aux_position = j1->proper;
+    set_jewel_position(j1, j2->proper);
+    set_jewel_position(j2, aux_position);
+    swap_jewels_types(j1, j2);
+}
 
 /*updates position of specified jewel
  * returns 0 if movement has ended
