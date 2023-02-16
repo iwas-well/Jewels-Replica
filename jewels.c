@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 #include "structs.h"
-#include "allegro_dependecies.h"
+#include "allegro_dependencies.h"
 #include "libgame.h"
 #include "jewels_destruction.h"
 #include "jewels_movement.h"
@@ -46,6 +46,7 @@ int main()
     int selected = 0;
 
     int moving;
+    int count_frames = 0;
     int last_state;
     int new_lev_frames = 0; //amount of frames spent on new level state
     int next_level_score = FIRST_SCORE_GOAL;
@@ -174,6 +175,7 @@ int main()
 
 
                 if ( set_to_destroy_matched_jewels(&mat) ){
+                    //plays destroy sound
                     if (al_get_sample_instance_playing(mat.audio.sample_inst[DESTROY_AUDIO]))
                         al_stop_sample_instance(mat.audio.sample_inst[DESTROY_AUDIO]);
                     al_play_sample_instance(mat.audio.sample_inst[DESTROY_AUDIO]);
@@ -274,7 +276,7 @@ int main()
                             new_lev_frames++;
                             if (new_lev_frames == NEW_LEVEL_TIMER){
                                 new_lev_frames = 0;
-                                state  = JEWEL;
+                                state  = WAIT;
                             }
 
                         }
@@ -282,9 +284,15 @@ int main()
                             framerate_divisor++;
                     }
                 break;
-                case HELP_PAGE:
-                break;
-                case END_GAME:
+                case WAIT:
+                    if (mat.event.type == ALLEGRO_EVENT_TIMER && al_is_event_queue_empty(mat.queue))
+                    {
+                        if (count_frames == WAIT_FRAMES){ 
+                            count_frames = 0;
+                            state  = JEWEL;
+                        }
+                        count_frames++;
+                    }
                 break;
             default:
                 break;
