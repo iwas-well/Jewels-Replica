@@ -123,16 +123,63 @@ int test_possible_row_match(game_struct* mat, int row, int col){
     return 0;
 }
 
+//int test_end_game(game_struct* mat){
+//    int last_row = (ROW_QT-1); 
+//    int last_col = (COL_QT-1); 
+//
+//    for (int row = last_row; row >= 0; row--) 
+//        for(int col = 0; col <= last_col; col++){
+//            if (test_possible_row_match(mat, row, col+1) ||
+//                test_possible_col_match(mat, row-1, col))
+//                return 0;
+//        }
+//
+//    return 1;
+//}
+
+int test_jewel_mid_sequence(game_struct* mat, int row, int col)
+{
+    if (row +1 < ROW_QT)
+        if (row - 1 >= 0)
+        {
+            if ((mat->jewels[row][col].type == mat->jewels[row+1][col].type) &&
+                (mat->jewels[row][col].type == mat->jewels[row-1][col].type))
+                    return 1;
+        }
+
+    if (col +1 < COL_QT)
+        if (col - 1 >= 0)
+        {
+            if ((mat->jewels[row][col].type == mat->jewels[row][col+1].type) &&
+                (mat->jewels[row][col].type == mat->jewels[row][col-1].type))
+                    return 1;
+        }
+
+    return 0;
+}
+
 int test_end_game(game_struct* mat){
     int last_row = (ROW_QT-1); 
     int last_col = (COL_QT-1); 
 
-    for (int row = last_row; row >= 0; row--) 
+    for (int row = 0; row <= last_row; row--) 
         for(int col = 0; col <= last_col; col++){
-            if (test_possible_row_match(mat, row, col+1) ||
-                test_possible_col_match(mat, row-1, col))
-                return 0;
+            //if (test_possible_row_match(mat, row, col+1) ||
+            //    test_possible_col_match(mat, row-1, col))
+            //    return 0;
+            troca_esq;
+            test;
+            distrca;
+
+            troca_dir
+            test;
+            distrca;
         }
+
+    for (int row = 0; row <= last_row; row--) 
+        for(int col = 0; col <= last_col; col++){
+            if ((mat->jewels[row][col].type == WHITE))
+                return 0;
 
     return 1;
 }

@@ -9,7 +9,6 @@
 #include "jewels_movement.h"
 
 //todo:
-//  refactor code
 //  rock
 //  destruction animation
 
