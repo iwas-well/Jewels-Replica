@@ -137,7 +137,7 @@ int test_end_game(game_struct* mat){
     return 1;
 }
 
-int register_user_input(ALLEGRO_EVENT* event, game_struct* mat, int* selected)
+int register_user_input(ALLEGRO_EVENT* event, game_struct* mat)
 {
     //if clicked on jewel matrix
     if (event->mouse.x >= mat->pos.x &&
@@ -149,15 +149,15 @@ int register_user_input(ALLEGRO_EVENT* event, game_struct* mat, int* selected)
         vec2 clicked_slot;
         clicked_slot = get_rowcol(event->mouse.x, event->mouse.y, mat);
 
-        if (!*selected)
+        if (!mat->selected)
         {
             //first jewel to be swapped is now selected
-            *selected = 1;
+            mat->selected = 1;
             mat->swap1 = &mat->jewels[clicked_slot.row][clicked_slot.col];
         }
         else
         {
-            *selected = 0;
+            mat->selected = 0;
             //if clicked at the side of first selected jewel
             if (event->mouse.y > (mat->swap1->proper.y+1) &&
                 event->mouse.y < (mat->swap1->proper.y+JEWEL_SIZE-1) )
@@ -203,7 +203,7 @@ int register_user_input(ALLEGRO_EVENT* event, game_struct* mat, int* selected)
         }
     }
     else
-        *selected = 0; //if click outside matrix, cancel swapping
+        mat->selected = 0; //if click outside matrix, cancel swapping
 
     return 0;
 }
@@ -303,6 +303,9 @@ int initialize_jewel_structure(game_struct *mat){
     if ( !(mat->jewels = allocate_jewel_matrix(ROW_QT, COL_QT)) )
         return 0;
 
+    mat->pos.x = (SC_W - COL_QT*JEWEL_SIZE)/2;
+    mat->pos.y = (SC_H - ROW_QT*JEWEL_SIZE)/2;
+
     //initialize jewels
     for (int i = 0; i < ROW_QT; i++)
         for (int j = 0; j < COL_QT; j++){
@@ -319,7 +322,13 @@ int initialize_jewel_structure(game_struct *mat){
         }
 
     mat->available_jewels = FIRST_AVAILABLE_JEWELS;
+    mat->next_level_score = FIRST_SCORE_GOAL;
+    mat->best_score = 0;
     mat->score = 0;
+    mat->state = JEWEL;
+    mat->level = 1;
+    mat->selected = 0;
+
     mat->swap1 = NULL;
     mat->swap2 = NULL;
 

@@ -83,16 +83,16 @@ int initialize_allegro_dependencies(game_struct* game_st)
     //load sound files
     al_reserve_samples(1);
 
-    game_st->audio.sample[BG_AUDIO] = al_load_sample("./resources/audio/Howls_Moving_Castle.ogg");    	
     game_st->audio.sample[SWAP_AUDIO] = al_load_sample("./resources/audio/swap.ogg");    	
     game_st->audio.sample[PAUSE_AUDIO] = al_load_sample("./resources/audio/pause.ogg");    	
     game_st->audio.sample[DESTROY_AUDIO] = al_load_sample("./resources/audio/destroy.ogg");    	
     game_st->audio.sample[TREASURE_AUDIO] = al_load_sample("./resources/audio/treasure.ogg");    	
     game_st->audio.sample[NEW_LEVEL_AUDIO] = al_load_sample("./resources/audio/next_level.ogg");    	
+    game_st->audio.sample[BG_AUDIO] = al_load_sample("./resources/audio/Howls_Moving_Castle.ogg");    	
 
+    must_init(game_st->audio.sample[PAUSE_AUDIO],"som de pausa");
     must_init(game_st->audio.sample[BG_AUDIO],"musica de fundo");
     must_init(game_st->audio.sample[SWAP_AUDIO],"musica de swap");
-    must_init(game_st->audio.sample[PAUSE_AUDIO],"som de pausa");
     must_init(game_st->audio.sample[DESTROY_AUDIO],"som de destruicao");
     must_init(game_st->audio.sample[TREASURE_AUDIO],"som de easteregg");
     must_init(game_st->audio.sample[NEW_LEVEL_AUDIO],"musica de proximo nivel");

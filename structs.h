@@ -74,9 +74,7 @@ typedef struct game_struct{
     jewel **jewels;         //jewel matrix
     jewel *swap1, *swap2;   //last two swaped jewels
     vec2 pos;               //xy position of jewel matrix
-    int available_jewels;   //num of jewels available in current level
                             
-    int score;
 
     game_images image;
     game_audio audio;
@@ -86,6 +84,16 @@ typedef struct game_struct{
     ALLEGRO_EVENT_QUEUE* queue;
     ALLEGRO_FONT* font[2];
     ALLEGRO_EVENT event;
+
+    int available_jewels;   //num of jewels available in current level
+    int next_level_score;
+    int score;
+    int state;
+    int last_state;
+    int level;    
+    int selected;
+    int best_score;
+
 } game_struct;
 
 #endif

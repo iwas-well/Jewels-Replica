@@ -59,7 +59,7 @@ int test_possible_row_match(game_struct* mat, int row, int col);
 
 int test_end_game(game_struct* mat);
 
-int register_user_input(ALLEGRO_EVENT* event, game_struct* mat, int* selected);
+int register_user_input(ALLEGRO_EVENT* event, game_struct* mat);
 
 int test_row(game_struct *mat, int row);
 
