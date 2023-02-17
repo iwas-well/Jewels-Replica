@@ -53,10 +53,6 @@ void increase_score_power(game_struct* mat, int powerup);
 
 j_type get_new_type(int avail_jewels);
 
-int test_possible_col_match(game_struct* mat, int row, int col);
-
-int test_possible_row_match(game_struct* mat, int row, int col);
-
 int test_end_game(game_struct* mat);
 
 int register_user_input(ALLEGRO_EVENT* event, game_struct* mat);

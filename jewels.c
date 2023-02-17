@@ -8,9 +8,6 @@
 #include "jewels_destruction.h"
 #include "jewels_movement.h"
 
-//todo:
-//  rock
-//  destruction animation
 
 int main()
 {
@@ -37,10 +34,11 @@ int main()
     int moving;
     int count_frames = 0;
     int new_lev_frames = 0; //amount of frames spent on new level state
-    int framerate_divisor = 0;
+    int framerate_divisor = 0; //new level frame divisor (slows down time)
     int mistakes = 0;  //count mistakes for easteregg
-
     int render = 0;
+
+    //game state machine
     while (1){
         al_wait_for_event(mat.queue, &mat.event);
 
@@ -152,7 +150,7 @@ int main()
         switch(mat.state)
         {
             case JEWEL:
-
+            //creates powerups, destroy jewels and set them in motion
                 if (mistakes == 5){
                     //play easteregg
                     mistakes = 0;
@@ -202,7 +200,7 @@ int main()
                 }
                 break;
             case INPUT:
-                //process input
+                //processes input
                 if (mat.event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN)
                     if ( register_user_input(&mat.event, &mat) ){
                         if (al_get_sample_instance_playing(mat.audio.sample_inst[SWAP_AUDIO]))
@@ -212,6 +210,7 @@ int main()
                     }
                 break;
             case SWAP:
+                //update swapped jewels position, unswaps them if no match was formed
                 if(mat.event.type == ALLEGRO_EVENT_TIMER)
                 { //make it frame rate consistent
                     update_jewel(mat.swap1);
@@ -246,6 +245,7 @@ int main()
                 }
                 break;
                 case DROP:
+                //updates all jewels positions
                     if(mat.event.type == ALLEGRO_EVENT_TIMER){
                             moving = update_all_jewels(&mat);
 
@@ -254,6 +254,7 @@ int main()
                     }
                 break;
                 case NEW_LEVEL:
+                //sort jewels for new levels
                     if (mat.event.type == ALLEGRO_EVENT_TIMER)
                     {
                         if (framerate_divisor == NEW_LEVEL_SLOW_DOWN){ 
@@ -272,6 +273,7 @@ int main()
                     }
                 break;
                 case WAIT:
+                //waits
                     if (mat.event.type == ALLEGRO_EVENT_TIMER)
                     {
                         if (count_frames == WAIT_FRAMES){ 
@@ -301,6 +303,7 @@ int main()
     //**************************************//
     deallocate_allegro_structures(&mat);
     //**************************************//
+    
     free(mat.jewels);
 
     return 0;

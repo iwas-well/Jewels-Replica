@@ -54,18 +54,21 @@ void set_falling(game_struct* mat)
             mat->jewels[i][j].lower = 0;
 }
 
+//setes jewels x,y velocity
 void set_jewel_motion(jewel* j1, float x_speed, float y_speed)
 {
     j1->vel.x = x_speed;
     j1->vel.y = y_speed;
 }
 
-void set_jewel_position(jewel* j1, vec2 new_current_position)
+//sets jewel current position
+void set_jewel_position(jewel* j1, vec2 new_position)
 {
-    j1->current.x = new_current_position.x;
-    j1->current.y = new_current_position.y;
+    j1->current.x = new_position.x;
+    j1->current.y = new_position.y;
 }
 
+//swap types and powerups of 2 given jewels 
 void swap_jewels_types(jewel* j1, jewel* j2)
 {
     //swap types

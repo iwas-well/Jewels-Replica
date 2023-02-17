@@ -1,4 +1,5 @@
 #include "libgame.h"
+#include "jewels_movement.h"
 
 vec2 get_rowcol(int x, int y, game_struct* mat)
 {
@@ -32,158 +33,75 @@ j_type get_new_type(int avail_jewels){
     return (rand()%avail_jewels);
 }
 
-int test_possible_col_match(game_struct* mat, int row, int col){
-    int last_col = COL_QT - 1;
-
-    if (row > 0) {
-        j_type UpRow_Col = mat->jewels[row-1][col].type;
-        j_type Row_Col = mat->jewels[row][col].type;
-        j_type DownRow_Col = mat->jewels[row+1][col].type;
-
-        if (col < last_col){
-            j_type UpRow_NextCol = mat->jewels[row-1][col+1].type;
-            j_type Row_NextCol = mat->jewels[row][col+1].type;
-            j_type DownRow_NextCol = mat->jewels[row+1][col+1].type;
-
-            //*        *  UpRow
-            // *      *   Row
-            // *  or  *   DownRow
-            if (((UpRow_Col == Row_NextCol) && (Row_NextCol == DownRow_NextCol)) ||
-                ((UpRow_NextCol == Row_Col) && (Row_Col == DownRow_Col)))
-                return 1;
-            //*        *
-            //*        *
-            // *  or  *
-            if (((UpRow_Col == Row_Col) && (Row_Col == DownRow_NextCol)) ||
-                ((UpRow_NextCol == Row_NextCol) && (Row_NextCol == DownRow_Col)))
-                return 1;
-            //*        *
-            // *      *
-            //*   or   *
-            if (((UpRow_Col == Row_NextCol) && (Row_NextCol == DownRow_Col)) ||
-                ((UpRow_NextCol == Row_Col) && (Row_Col == DownRow_NextCol)))
-                return 1;
-        }
-        //*        *
-        //*         
-        //         *
-        //*   or   *
-        if (row-2 >= 0)
-            if (((UpRow_Col == DownRow_Col) && (DownRow_Col == mat->jewels[row-2][col].type)) ||
-                ((Row_Col == DownRow_Col) && (DownRow_Col == mat->jewels[row-2][col].type)))
-                return 1;
-    }
-    return 0;
-}
-
-int test_possible_row_match(game_struct* mat, int row, int col){
-    int last_col = COL_QT - 1;
-
-    if (col < last_col){
-        j_type Row_PrevCol = mat->jewels[row][col-1].type;
-        j_type Row_Col = mat->jewels[row][col].type;
-        j_type Row_NextCol = mat->jewels[row][col+1].type;
-
-        if (Row_PrevCol == WHITE)
-            return 1;
-
-        if (row){
-            j_type UpRow_PrevCol = mat->jewels[row-1][col-1].type;
-            j_type UpRow_Col = mat->jewels[row-1][col].type;
-            j_type UpRow_NextCol = mat->jewels[row-1][col+1].type;
-
-            //*          *  UpRow 
-            // **  or  **   Row   
-            if (((UpRow_PrevCol == Row_Col) && (Row_Col == Row_NextCol)) ||
-                ((Row_PrevCol == Row_Col) && (Row_Col == UpRow_NextCol)))
-                return 1;
-            // **      **
-            //*    or    *
-            if (((Row_PrevCol == UpRow_Col) && (UpRow_Col == UpRow_NextCol)) ||
-                ((UpRow_PrevCol == UpRow_Col) && (UpRow_Col == Row_NextCol)))
-                return 1;
-            //* *       *  
-            // *   or  * *
-            if (((UpRow_PrevCol == Row_Col) && (Row_Col == UpRow_NextCol)) || 
-                ((Row_PrevCol == UpRow_Col) && (UpRow_Col == Row_NextCol)))
-                return 1;
-        }
-
-        //* **  or  ** * 
-        if ((col+2) <= last_col){
-            if ((Row_NextCol == WHITE) || (mat->jewels[row][col+2].type == WHITE))
-                return 1;
-             
-            if (((Row_PrevCol == Row_NextCol) && (Row_NextCol == mat->jewels[row][col+2].type)) ||
-                ((Row_PrevCol == Row_Col) && (Row_Col == mat->jewels[row][col+2].type)))
-                return 1;
-        }
-    }
-
-    return 0;
-}
-
-//int test_end_game(game_struct* mat){
-//    int last_row = (ROW_QT-1); 
-//    int last_col = (COL_QT-1); 
-//
-//    for (int row = last_row; row >= 0; row--) 
-//        for(int col = 0; col <= last_col; col++){
-//            if (test_possible_row_match(mat, row, col+1) ||
-//                test_possible_col_match(mat, row-1, col))
-//                return 0;
-//        }
-//
-//    return 1;
-//}
-
+//tests if jewel in given (row, col) is inside a jewel sequence
 int test_jewel_mid_sequence(game_struct* mat, int row, int col)
 {
-    if (row +1 < ROW_QT)
-        if (row - 1 >= 0)
-        {
-            if ((mat->jewels[row][col].type == mat->jewels[row+1][col].type) &&
-                (mat->jewels[row][col].type == mat->jewels[row-1][col].type))
+    //tests if jewel is in a column sequence
+    if ((row +1 < ROW_QT) && (row - 1 >= 0))
+        if ((mat->jewels[row][col].type == mat->jewels[row+1][col].type) &&
+            (mat->jewels[row][col].type == mat->jewels[row-1][col].type))
+                return 1;
+    if (row +2 < ROW_QT)
+        if ((mat->jewels[row][col].type == mat->jewels[row+1][col].type) &&
+            (mat->jewels[row][col].type == mat->jewels[row+2][col].type))
                     return 1;
-        }
+    if (row - 2 >= 0)
+        if ((mat->jewels[row][col].type == mat->jewels[row-1][col].type) &&
+            (mat->jewels[row][col].type == mat->jewels[row-2][col].type))
+            return 1;
 
-    if (col +1 < COL_QT)
-        if (col - 1 >= 0)
-        {
-            if ((mat->jewels[row][col].type == mat->jewels[row][col+1].type) &&
-                (mat->jewels[row][col].type == mat->jewels[row][col-1].type))
+    //tests if jewel is in a row sequence
+    if ((col + 1 < COL_QT) && (col - 1 >= 0))
+        if ((mat->jewels[row][col].type == mat->jewels[row][col+1].type) &&
+            (mat->jewels[row][col].type == mat->jewels[row][col-1].type))
+                return 1;
+    if (col +2 < COL_QT)
+        if ((mat->jewels[row][col].type == mat->jewels[row][col+1].type) &&
+            (mat->jewels[row][col].type == mat->jewels[row][col+2].type))
                     return 1;
-        }
+    if (col - 2 >= 0)
+        if ((mat->jewels[row][col].type == mat->jewels[row][col-1].type) &&
+            (mat->jewels[row][col].type == mat->jewels[row][col-2].type))
+            return 1;
 
     return 0;
 }
 
+//tests if there is any possible move left
 int test_end_game(game_struct* mat){
     int last_row = (ROW_QT-1); 
     int last_col = (COL_QT-1); 
 
-    for (int row = 0; row <= last_row; row--) 
+    for (int row = 0; row <= last_row; row++)
         for(int col = 0; col <= last_col; col++){
-            //if (test_possible_row_match(mat, row, col+1) ||
-            //    test_possible_col_match(mat, row-1, col))
-            //    return 0;
-            troca_esq;
-            test;
-            distrca;
+            if (col < last_col){
+                swap_jewels_types(&mat->jewels[row][col], &mat->jewels[row][col+1]);
+                if (test_jewel_mid_sequence(mat, row, col) || test_jewel_mid_sequence(mat, row, col+1)){
+                    swap_jewels_types(&mat->jewels[row][col], &mat->jewels[row][col+1]);
+                    return 0;
+                }
+                swap_jewels_types(&mat->jewels[row][col], &mat->jewels[row][col+1]);
+            }
 
-            troca_dir
-            test;
-            distrca;
+            if (row < last_row){
+                swap_jewels_types(&mat->jewels[row][col], &mat->jewels[row+1][col]);
+                if (test_jewel_mid_sequence(mat, row, col) || test_jewel_mid_sequence(mat, row+1, col)){
+                    swap_jewels_types(&mat->jewels[row][col], &mat->jewels[row+1][col]);
+                    return 0;
+                }
+                swap_jewels_types(&mat->jewels[row][col], &mat->jewels[row+1][col]);
+            }
         }
 
-    for (int row = 0; row <= last_row; row--) 
-        for(int col = 0; col <= last_col; col++){
-            if ((mat->jewels[row][col].type == WHITE))
-                return 0;
+    //if a diamond powerup exists, game does not end
+    for (int row = 0; row <= last_row; row++)
+        for(int col = 0; col <= last_col; col++)
+            if (mat->jewels[row][col].type == WHITE) return 0;
 
     return 1;
 }
 
+//register user input, swapping jewels when two adjacent are selected
 int register_user_input(ALLEGRO_EVENT* event, game_struct* mat)
 {
     //if clicked on jewel matrix
@@ -255,6 +173,7 @@ int register_user_input(ALLEGRO_EVENT* event, game_struct* mat)
     return 0;
 }
 
+//tests if there is any match 3 in the given row
 int test_row(game_struct *mat, int row){
     int j, qt;
     j_type aux;
@@ -276,6 +195,7 @@ int test_row(game_struct *mat, int row){
     return 0;
 }
 
+//tests if there is any match 3 in column col
 int test_col(game_struct *mat, int col){
     int i, qt;
     j_type aux;
@@ -297,6 +217,8 @@ int test_col(game_struct *mat, int col){
     return 0;
 }
 
+//tests if swap should be allowed
+//returns 1 if there exists any match in game
 int test_swap(game_struct *mat){
     vec2 rowcol;
 
@@ -312,6 +234,7 @@ int test_swap(game_struct *mat){
     return 0;
 }
 
+//swap random jewels 'swap_num' times
 void sort_jewels(game_struct* mat,int swap_num)
 {
     int position;
@@ -332,6 +255,13 @@ void sort_jewels(game_struct* mat,int swap_num)
 
 }
 
+int min(int a, int b)
+{
+    if (a<b)
+        return a;
+    return b;
+}
+
 jewel** allocate_jewel_matrix(int row, int col)
 {
     jewel** jewels;
@@ -345,6 +275,7 @@ jewel** allocate_jewel_matrix(int row, int col)
     return jewels;
 }
 
+//initializes main game struct
 int initialize_jewel_structure(game_struct *mat){
 
     if ( !(mat->jewels = allocate_jewel_matrix(ROW_QT, COL_QT)) )
@@ -380,12 +311,4 @@ int initialize_jewel_structure(game_struct *mat){
     mat->swap2 = NULL;
 
     return 1;
-}
-
-
-int min(int a, int b)
-{
-    if (a<b)
-        return a;
-    return b;
 }

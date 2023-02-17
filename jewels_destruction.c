@@ -44,6 +44,8 @@ void square_destroyer(game_struct* mat, int row, int col, int destroyer_type)
     }
 }
 
+//returns size of col sequence from up to bottom starting at
+//jewel with given row,col
 int col_sequence_size(game_struct* mat, int row, int col)
 {
     j_type aux = mat->jewels[row][col].type;
@@ -58,7 +60,8 @@ int col_sequence_size(game_struct* mat, int row, int col)
     return seq;
 }
 
-//returns size of row sequence from left to right starting at jewel
+//returns size of row sequence from left to right starting at
+//jewel with given row,col
 int row_sequence_size(game_struct* mat, int row, int col)
 {
     j_type aux = mat->jewels[row][col].type;
@@ -73,6 +76,7 @@ int row_sequence_size(game_struct* mat, int row, int col)
     return seq;
 }
 
+//destroy all jewels with status set as destroy
 void destroy_jewels(game_struct* mat)
 {
     for (int row = 0; row < ROW_QT; row++)
@@ -81,6 +85,7 @@ void destroy_jewels(game_struct* mat)
                 destroy_jewel(mat, row, col, EMPTY);
 }
 
+//destroy jewel of given row,col
 void destroy_jewel(game_struct* mat, int row, int col, int destroyer_type)
 {
     int aux_power;
@@ -129,6 +134,7 @@ void create_new_powers(game_struct* mat){
             }
 }
 
+//set jewels to be destroyed and creates powerups
 int set_to_destroy_matched_jewels(game_struct* mat)
 {
     int match = 0;
