@@ -11,23 +11,23 @@ vec2 get_rowcol(int x, int y, game_struct* mat)
 
 void increase_score(game_struct* mat, int seq_size)
 {
-     if (seq_size == 3)
-         mat->score += 10;
-     else if (seq_size == 4)
-         mat->score += 20;
-     else if (seq_size >= 5)
-         mat->score += 30;
+    if (seq_size == 3)
+        mat->score += 10;
+    else if (seq_size == 4)
+        mat->score += 20;
+    else if (seq_size >= 5)
+        mat->score += 30;
 }
 
 void increase_score_power(game_struct* mat, int powerup)
 {
-     if (powerup == SQUARE)
-         mat->score += 50;
-     else if (powerup == STAR)
-         mat->score += 60;
-     else if (powerup == DIAMOND)
-         mat->score += 100;
- }
+    if (powerup == SQUARE)
+        mat->score += 50;
+    else if (powerup == STAR)
+        mat->score += 60;
+    else if (powerup == DIAMOND)
+        mat->score += 100;
+}
 
 j_type get_new_type(int avail_jewels){
     return (rand()%avail_jewels);
@@ -39,29 +39,29 @@ int test_jewel_mid_sequence(game_struct* mat, int row, int col)
     //tests if jewel is in a column sequence
     if ((row +1 < ROW_QT) && (row - 1 >= 0))
         if ((mat->jewels[row][col].type == mat->jewels[row+1][col].type) &&
-            (mat->jewels[row][col].type == mat->jewels[row-1][col].type))
-                return 1;
+                (mat->jewels[row][col].type == mat->jewels[row-1][col].type))
+            return 1;
     if (row +2 < ROW_QT)
         if ((mat->jewels[row][col].type == mat->jewels[row+1][col].type) &&
-            (mat->jewels[row][col].type == mat->jewels[row+2][col].type))
-                    return 1;
+                (mat->jewels[row][col].type == mat->jewels[row+2][col].type))
+            return 1;
     if (row - 2 >= 0)
         if ((mat->jewels[row][col].type == mat->jewels[row-1][col].type) &&
-            (mat->jewels[row][col].type == mat->jewels[row-2][col].type))
+                (mat->jewels[row][col].type == mat->jewels[row-2][col].type))
             return 1;
 
     //tests if jewel is in a row sequence
     if ((col + 1 < COL_QT) && (col - 1 >= 0))
         if ((mat->jewels[row][col].type == mat->jewels[row][col+1].type) &&
-            (mat->jewels[row][col].type == mat->jewels[row][col-1].type))
-                return 1;
+                (mat->jewels[row][col].type == mat->jewels[row][col-1].type))
+            return 1;
     if (col +2 < COL_QT)
         if ((mat->jewels[row][col].type == mat->jewels[row][col+1].type) &&
-            (mat->jewels[row][col].type == mat->jewels[row][col+2].type))
-                    return 1;
+                (mat->jewels[row][col].type == mat->jewels[row][col+2].type))
+            return 1;
     if (col - 2 >= 0)
         if ((mat->jewels[row][col].type == mat->jewels[row][col-1].type) &&
-            (mat->jewels[row][col].type == mat->jewels[row][col-2].type))
+                (mat->jewels[row][col].type == mat->jewels[row][col-2].type))
             return 1;
 
     return 0;
@@ -102,75 +102,52 @@ int test_end_game(game_struct* mat){
 }
 
 //register user input, swapping jewels when two adjacent are selected
-int register_user_input(ALLEGRO_EVENT* event, game_struct* mat)
+int register_user_selection(ALLEGRO_EVENT* event, game_struct* mat)
 {
-    //if clicked on jewel matrix
-    if (event->mouse.x >= mat->pos.x &&
-        event->mouse.y >= mat->pos.y &&
-        event->mouse.x <= mat->pos.x + (COL_QT*JEWEL_SIZE) &&
-        event->mouse.y <= mat->pos.y + (ROW_QT*JEWEL_SIZE))
-    {
-        //get row and column of jewel clicked
-        vec2 clicked_slot;
-        clicked_slot = get_rowcol(event->mouse.x, event->mouse.y, mat);
+    vec2 clicked_slot;
 
-        if (!mat->selected)
-        {
-            //first jewel to be swapped is now selected
-            mat->selected = 1;
-            mat->swap1 = &mat->jewels[clicked_slot.row][clicked_slot.col];
-        }
-        else
-        {
-            mat->selected = 0;
-            //if clicked at the side of first selected jewel
-            if (event->mouse.y > (mat->swap1->proper.y+1) &&
-                event->mouse.y < (mat->swap1->proper.y+JEWEL_SIZE-1) )
-            {
-                //swap right 
-                if (event->mouse.x > (mat->swap1->proper.x+JEWEL_SIZE) &&
-                    event->mouse.x < (mat->swap1->proper.x+(2*JEWEL_SIZE)))
-                {
-                    mat->swap2 = &mat->jewels[clicked_slot.row][clicked_slot.col];
-                    swap_jewels(mat->swap1, mat->swap2, -VELOCITY, 0);
-                    return 1;
-                }
-                //swap left
-                else if (event->mouse.x > mat->swap1->proper.x-JEWEL_SIZE &&
-                        event->mouse.x < mat->swap1->proper.x)
-                {
-                    mat->swap2 = &mat->jewels[clicked_slot.row][clicked_slot.col];
-                    swap_jewels(mat->swap1, mat->swap2, VELOCITY, 0);
-                    return 1;
-                }
-            }
-            //if clicked at top or bottom of first selected jewel
-            else if (event->mouse.x > (mat->swap1->proper.x+1) &&
-                    event->mouse.x < (mat->swap1->proper.x+JEWEL_SIZE-1))
-            {
-                //swap up
-                if (event->mouse.y > mat->swap1->proper.y-JEWEL_SIZE &&
-                    event->mouse.y < mat->swap1->proper.y)
-                {
-                    mat->swap2 = &mat->jewels[clicked_slot.row][clicked_slot.col];
-                    swap_jewels(mat->swap1, mat->swap2, 0, VELOCITY);
-                    return 1;
-                }
-                //swap down
-                else if (event->mouse.y > mat->swap1->proper.y+JEWEL_SIZE &&
-                        event->mouse.y < mat->swap1->proper.y+2*JEWEL_SIZE )
-                {
-                    mat->swap2 = &mat->jewels[clicked_slot.row][clicked_slot.col];
-                    swap_jewels(mat->swap1, mat->swap2, 0, -VELOCITY);
-                    return 1;
-                }
-            }
-        }
+    int clicked_on_jewels = (event->mouse.x >= mat->pos.x &&
+            event->mouse.y >= mat->pos.y &&
+            event->mouse.x <= mat->pos.x + (COL_QT*JEWEL_SIZE) &&
+            event->mouse.y <= mat->pos.y + (ROW_QT*JEWEL_SIZE));
+
+    if ( !clicked_on_jewels ) { //if click outside matrix, cancel swapping
+        mat->selected = 0; 
+        return 0;
     }
-    else
-        mat->selected = 0; //if click outside matrix, cancel swapping
 
-    return 0;
+    //get row and column of jewel clicked
+    clicked_slot = get_rowcol(event->mouse.x, event->mouse.y, mat);
+
+    if ( !mat->selected ) { 
+        //first jewel to be swapped is now selected
+        mat->selected = 1;
+        mat->swap1 = &mat->jewels[clicked_slot.row][clicked_slot.col];
+        return 1;
+    }
+    //second jewel to be swapped is now selected
+    mat->selected = 2;
+    mat->swap2 = &mat->jewels[clicked_slot.row][clicked_slot.col];
+    return 1;
+}
+
+void set_swap_direction(game_struct *mat) {
+    vec2 swap1_slot = get_rowcol(mat->swap1->current.x, mat->swap1->current.y, mat);
+    vec2 swap2_slot = get_rowcol(mat->swap2->current.x, mat->swap2->current.y, mat);
+
+    mat->swap_direction = STALL;
+    if (swap1_slot.row == swap2_slot.row) { 
+        if (swap2_slot.col == swap1_slot.col+1)
+            mat->swap_direction = RIGHT;
+        else if (swap2_slot.col == swap1_slot.col-1)
+            mat->swap_direction = LEFT;                                                              
+    }
+    else if (swap1_slot.col == swap2_slot.col) { 
+        if (swap2_slot.row == swap1_slot.row+1)
+            mat->swap_direction = UP;                                                              
+        else if (swap2_slot.row == swap1_slot.row-1)
+            mat->swap_direction = DOWN;               
+    }
 }
 
 //tests if there is any match 3 in the given row
@@ -221,16 +198,13 @@ int test_col(game_struct *mat, int col){
 //returns 1 if there exists any match in game
 int test_swap(game_struct *mat){
     vec2 rowcol;
-
     //dont need to test all column/row, only the sequence connected to the swap!
     rowcol = get_rowcol(mat->swap1->current.x, mat->swap1->current.y, mat);
     if ( test_row(mat, rowcol.row) || test_col(mat, rowcol.col) )
         return 1;
-
     rowcol = get_rowcol(mat->swap2->current.x, mat->swap2->current.y, mat);
     if ( test_row(mat, rowcol.row) || test_col(mat, rowcol.col) )
         return 1;
-
     return 0;
 }
 
@@ -265,12 +239,12 @@ int min(int a, int b)
 jewel** allocate_jewel_matrix(int row, int col)
 {
     jewel** jewels;
-    if ( !(jewels = malloc(sizeof(jewel*)*ROW_QT + sizeof(jewel)*ROW_QT*COL_QT)) )
+    if ( !(jewels = malloc(sizeof(jewel*)*row + sizeof(jewel)*row*col)) )
         return NULL;
 
-    jewels[0] = (jewel*) (jewels + ROW_QT);
-    for (int i = 1; i < ROW_QT; i++)
-        jewels[i] = jewels[0] + (i * COL_QT);
+    jewels[0] = (jewel*) (jewels + row);
+    for (int i = 1; i < row; i++)
+        jewels[i] = jewels[0] + (i * col);
 
     return jewels;
 }
@@ -279,6 +253,9 @@ jewel** allocate_jewel_matrix(int row, int col)
 int initialize_jewel_structure(game_struct *mat){
 
     if ( !(mat->jewels = allocate_jewel_matrix(ROW_QT, COL_QT)) )
+        return 0;
+
+    if ( !(mat->vanish = allocate_jewel_matrix(ROW_QT, COL_QT)) )
         return 0;
 
     mat->pos.x = (SC_W - COL_QT*JEWEL_SIZE)/2;
@@ -297,6 +274,10 @@ int initialize_jewel_structure(game_struct *mat){
             mat->jewels[i][j].new_type = EMPTY;
             mat->jewels[i][j].status = NONE;
             mat->jewels[i][j].lower = 0;
+            mat->jewels[i][j].alpha = 100;
+
+            mat->vanish[i][j] = mat->jewels[i][j];
+            mat->vanish[i][j].alpha = 0;
         }
 
     mat->available_jewels = FIRST_AVAILABLE_JEWELS;

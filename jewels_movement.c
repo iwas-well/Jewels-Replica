@@ -1,14 +1,9 @@
 #include "jewels_movement.h"
 
 /*sets empty jewels new types and sets their downward motion*/
-void set_falling(game_struct* mat)
-{
-    int i, j;
-    j_type aux;
-
-    for (i = ROW_QT-1; i >= 0; i--){
-        for (j = 0; j < COL_QT; j++)
-        {
+void set_falling(game_struct* mat) {
+    for (int i = ROW_QT-1; i >= 0; i--) {
+        for (int j = 0; j < COL_QT; j++) {
             int above_last_row = (i < (ROW_QT-1));
             if (above_last_row)
                 mat->jewels[i][j].lower = mat->jewels[i + 1][j].lower;
@@ -16,16 +11,15 @@ void set_falling(game_struct* mat)
                 mat->jewels[i][j].lower = 0;
 
             int new_jewel_row = (i - mat->jewels[i][j].lower);
-            while ((new_jewel_row >= 0) && (mat->jewels[new_jewel_row][j].type == EMPTY)){
-                mat->jewels[i][j].lower ++;
+            while ((new_jewel_row >= 0) && (mat->jewels[new_jewel_row][j].type == EMPTY)) {
+                mat->jewels[i][j].lower++;
                 new_jewel_row = (i - mat->jewels[i][j].lower);
             }
 
             int above_should_drop = mat->jewels[i][j].lower;
             if (above_should_drop) {
-
                 mat->jewels[i][j].vel.x = 0;
-                mat->jewels[i][j].vel.y = VELOCITY;
+                mat->jewels[i][j].vel.y = VELOCITY_PER_FRAME;
 
                 if (new_jewel_row >= 0){
                     mat->jewels[i][j].type = mat->jewels[new_jewel_row][j].type;
@@ -43,18 +37,17 @@ void set_falling(game_struct* mat)
                     int new_jewel_height = mat->jewels[i][j].proper.y - (mat->jewels[i][j].lower * JEWEL_SIZE);
                     mat->jewels[i][j].current.y = new_jewel_height; 
                 }
-
             }
         }
     }
 
     int last_row = (ROW_QT-1); 
     for (int i = last_row; i >= 0; i--) 
-        for (j = 0; j < COL_QT; j++)
+        for (int j = 0; j < COL_QT; j++)
             mat->jewels[i][j].lower = 0;
 }
 
-//setes jewels x,y velocity
+//sets jewels x,y velocity
 void set_jewel_motion(jewel* j1, float x_speed, float y_speed)
 {
     j1->vel.x = x_speed;
@@ -84,51 +77,104 @@ void swap_jewels_types(jewel* j1, jewel* j2)
     j2->power = aux_power; 
 }
 
-/*swap jewels 'a' and 'b' types and set their velocity in opposit directions,
- * x_speed y_speed being the x velocity and y velocity of jewel 'a'*/
-void swap_jewels(jewel* j1, jewel* j2, float x_speed, float y_speed)
+/*swap jewels 'a' and 'b' types and set their velocity in opposite directions,
+ 
+//  x_speed y_speed being the x velocity and y velocity of jewel 'a'*/
+//void swap_jewels(jewel* j1, jewel* j2, float x_speed, float y_speed)
+void swap_jewels(jewel* j1, jewel* j2, int direction, float speed)
 {
-    set_jewel_motion(j1, x_speed, y_speed);
-    set_jewel_motion(j2, -x_speed, -y_speed);
+    swap_jewels_types(j1, j2);
 
     vec2 aux_position = j1->proper;
     set_jewel_position(j1, j2->proper);
     set_jewel_position(j2, aux_position);
-    swap_jewels_types(j1, j2);
+
+    float x_speed, y_speed;
+    switch (direction) {
+        case RIGHT:
+            x_speed=-speed;
+            y_speed=0;
+            break;
+        case LEFT:
+            x_speed=speed;
+            y_speed=0;
+            break;
+        case UP:
+            x_speed=0;
+            y_speed=-speed;
+            break;
+        case DOWN:
+            x_speed=0;
+            y_speed=speed;
+            break;
+    }
+
+    set_jewel_motion(j1, x_speed, y_speed);
+    set_jewel_motion(j2, -x_speed, -y_speed);
 }
 
+static float absf(float a){
+    if (a>0)
+        return a;
+    return -a;
+}
 /*updates position of specified jewel
- * returns 0 if movement has ended
- * otherwise, returns 1*/
+  returns 0 if movement has ended
+  otherwise, returns 1*/
 int update_jewel(jewel *jewel)
 {
     int moving = 0;
 
-    if (abs(jewel->current.x - jewel->proper.x) > VELOCITY ||
-        abs(jewel->current.y - jewel->proper.y) > VELOCITY)
+    if ( !(jewel->vel.x || jewel->vel.y) )
+        return moving;
+
+    if (abs(jewel->current.x - jewel->proper.x) > absf(jewel->vel.x) ||
+        abs(jewel->current.y - jewel->proper.y) > absf(jewel->vel.y))
     {
         moving = 1;
         jewel->current.x += jewel->vel.x;
         jewel->current.y += jewel->vel.y;
+
+        //------------------
+        if (jewel->vel.y > 0)
+            jewel->vel.y+=GRAVITY_ACCEL_PER_FRAME;
+        else if (jewel->vel.y < 0)
+            jewel->vel.y-=GRAVITY_ACCEL_PER_FRAME;
+        //------------------
     }
-    else
-    {
+    else {
         jewel->current.x = jewel->proper.x;
         jewel->current.y = jewel->proper.y;
+
+        jewel->vel.x=0;
+        jewel->vel.y=0;
     }
+
     return moving;
 }
 
 /*updates all jewels positions
- * returns 0 if jewel's movement has ended
- * otherwise, returns 1*/
+  returns 0 if jewel's movement has ended
+  otherwise, returns 1*/
 int update_all_jewels(game_struct *mat)
 {
     int moving = 0;
 
-    for (int row = 0; row < ROW_QT; row ++)
-        for (int col = 0; col < COL_QT; col ++)
-            moving = ( update_jewel(&(mat->jewels[row][col])) || moving );
+    for (int row = 0; row < ROW_QT; row++)
+        for (int col = 0; col < COL_QT; col++)
+            moving += update_jewel(&(mat->jewels[row][col]));
+    return moving;
+}
 
+int vanish_jewels(game_struct *mat)
+{
+    int moving = 0;
+    for (int row = 0; row < ROW_QT; row++)
+        for (int col = 0; col < COL_QT; col++) {
+            moving += update_jewel(&(mat->vanish[row][col]));
+            mat->vanish[row][col].alpha -= 12;
+            if (mat->vanish[row][col].alpha < 0)
+                mat->vanish[row][col].alpha = 0;
+        }
     return moving;
 }

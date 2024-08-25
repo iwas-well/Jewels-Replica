@@ -31,9 +31,10 @@
 
 
 typedef enum{RED, BLUE, GREEN, YELLOW, PURPLE, GREY, WHITE, EMPTY = -1} j_type;
+typedef enum{STALL, UP, DOWN, LEFT, RIGHT} dir_type;
 
 
-typedef union{ //allows calling 'x' variable by 'col', and 'y' by 'row'
+typedef union{ 
     struct{ int x, y; };
     struct{ int col, row; };
 } vec2;
@@ -46,15 +47,15 @@ typedef struct{
 typedef struct jewel{
     vec2 current;   //current xy position of jewel image
     vec2 proper;    //xy position of jewel slot
-    vec2 vel;       //jewel xy velocity values
+    fvec2 vel;      //jewel (x,y) velocity vector (pixels per frame)
     int new_power;
     j_type new_type;
     int power;    
     int status;
     j_type type;    //jewel color/type
-    int lower;      //flag for how many positions the jewel should lower
+    int lower;      //number of how many positions the jewel should lower
+    int alpha;
 } jewel;
-
 
 typedef struct game_images{
     ALLEGRO_BITMAP* sprite[7];
@@ -62,7 +63,6 @@ typedef struct game_images{
     ALLEGRO_BITMAP* square_sprite[6];
     ALLEGRO_BITMAP* screen[4];
 } game_images;
-
 typedef struct game_audio{
     ALLEGRO_SAMPLE* sample[6];
     ALLEGRO_SAMPLE_INSTANCE* sample_inst[6];
@@ -72,9 +72,12 @@ typedef struct game_audio{
 
 typedef struct game_struct{
     jewel **jewels;         //jewel matrix
-    jewel *swap1, *swap2;   //last two swaped jewels
     vec2 pos;               //xy position of jewel matrix
                             
+    jewel *swap1, *swap2;   //last two swaped jewels
+    dir_type swap_direction; //UP, DOWN, LEFT or RIGHT
+
+    jewel **vanish;         //jewel "vanishing" matrix
 
     game_images image;
     game_audio audio;

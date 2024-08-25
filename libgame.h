@@ -10,10 +10,19 @@
 //game configuration
 #define SC_W        1000 //screen width
 #define SC_H        750  //screen height
+#define FPS 60.0
 #define ROW_QT      8    //quantity of lines on the game matrix
 #define COL_QT      8    //quantity of columns on the game matrix
-#define JEWEL_SIZE  65   //lenght of jewel slot
-#define VELOCITY    4    //jewel movement velocity
+                         
+#define MATRIX_SIZE 530    //matrix size in pixels
+#define JEWEL_SIZE  ((MATRIX_SIZE/ROW_QT)-(15/ROW_QT))   //lenght of each jewel slot
+#define JEWEL_SPRITE_SIZE  65   //lenght of jewel sprite in pixels
+
+#define VELOCITY   240 //jewel movement velocity (pixels per second)
+#define GRAVITY_ACCEL    12   //jewel vertical movement acceleration (pixels per second)
+#define VELOCITY_PER_FRAME (float)(VELOCITY)/FPS
+#define GRAVITY_ACCEL_PER_FRAME (float)(GRAVITY_ACCEL)/FPS
+
 #define FIRST_SCORE_GOAL    250
 #define NEW_LEVEL_TIMER     30 //num of iterations on new level state
 #define SORTED_PER_FRAME    5  //num of swappings per frame on new level state
@@ -25,7 +34,7 @@
 //game states
 #define INPUT       0
 #define JEWEL       1
-#define DROP        2
+#define UPDATE      2
 #define SWAP        3
 #define END_GAME    4
 #define PAUSE       5
@@ -33,14 +42,14 @@
 #define HELP_PAGE   7
 #define WAIT        8
 
-//status
 #define NONE            0
+
+//status
 #define DESTROY         1
 #define DESTROY_STAR    2
 #define DESTROY_SQUARE  3
 
 //powerup
-#define NONE        0
 #define STAR        1
 #define SQUARE      2
 #define DIAMOND     3
@@ -55,7 +64,9 @@ j_type get_new_type(int avail_jewels);
 
 int test_end_game(game_struct* mat);
 
-int register_user_input(ALLEGRO_EVENT* event, game_struct* mat);
+int register_user_selection(ALLEGRO_EVENT* event, game_struct* mat);
+
+void set_swap_direction(game_struct *mat);
 
 int test_row(game_struct *mat, int row);
 
@@ -65,7 +76,7 @@ int test_swap(game_struct *mat);
 
 //*swap jewels 'a' and 'b' types and set their velocity in opposit directions,
 // * x_speed y_speed being the x velocity and y velocity of jewel 'a'*/
-void swap_jewels(jewel* j1, jewel* j2, float x_speed, float y_speed);
+//void swap_jewels(jewel* j1, jewel* j2, float x_speed, float y_speed);
 
 void sort_jewels(game_struct* mat,int swap_num);
 

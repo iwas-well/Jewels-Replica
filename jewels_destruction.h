@@ -15,7 +15,7 @@ int row_sequence_size(game_struct* mat, int row, int col);
 
 void destroy_jewels(game_struct* mat);
 
-void destroy_jewel(game_struct* mat, int row, int col, int destroyer_type);
+void destroy_jewel_on_slot(game_struct* mat, int row, int col, int destroyer_type);
 
 void create_new_powers(game_struct* mat);
 
