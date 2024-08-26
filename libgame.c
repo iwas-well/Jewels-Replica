@@ -255,7 +255,7 @@ int initialize_jewel_structure(game_struct *mat){
     if ( !(mat->jewels = allocate_jewel_matrix(ROW_QT, COL_QT)) )
         return 0;
 
-    if ( !(mat->vanish = allocate_jewel_matrix(ROW_QT, COL_QT)) )
+    if ( !(mat->destroyed = allocate_jewel_matrix(ROW_QT, COL_QT)) )
         return 0;
 
     mat->pos.x = (SC_W - COL_QT*JEWEL_SIZE)/2;
@@ -276,8 +276,8 @@ int initialize_jewel_structure(game_struct *mat){
             mat->jewels[i][j].lower = 0;
             mat->jewels[i][j].alpha = 100;
 
-            mat->vanish[i][j] = mat->jewels[i][j];
-            mat->vanish[i][j].alpha = 0;
+            mat->destroyed[i][j] = mat->jewels[i][j];
+            mat->destroyed[i][j].alpha = 0;
         }
 
     mat->available_jewels = FIRST_AVAILABLE_JEWELS;
@@ -287,6 +287,7 @@ int initialize_jewel_structure(game_struct *mat){
     mat->state = JEWEL;
     mat->level = 1;
     mat->selected = 0;
+    mat->mistake_counter = 0;  //mistakes are counted for easter egg
 
     mat->swap1 = NULL;
     mat->swap2 = NULL;

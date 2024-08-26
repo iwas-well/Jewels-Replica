@@ -193,14 +193,19 @@ int initialize_allegro_dependencies(game_struct* game)
     must_init(game->image.screen[MAT_IMAGE],"imagem de background da matriz");
     must_init(game->image.screen[HELP_IMAGE],"imagem da help page");
     must_init(game->image.screen[TRANSPARENT_IMAGE],"imagem de fim de jogo");
-    //************************************************************//
+    //------------------------------------------------------
 
     game->timer = al_create_timer(1.0/FPS);
-    must_init(game->timer, "timer");
+    must_init(game->timer, "frame timer");
+
+    game->timer2 = al_create_timer(0);
+    must_init(game->timer2, "timer");
+
     al_start_timer(game->timer);
+    al_register_event_source(game->queue, al_get_timer_event_source(game->timer));
+    al_register_event_source(game->queue, al_get_timer_event_source(game->timer2));
 
     al_register_event_source(game->queue, al_get_keyboard_event_source());
-    al_register_event_source(game->queue, al_get_timer_event_source(game->timer));
     al_register_event_source(game->queue, al_get_mouse_event_source());
     al_register_event_source(game->queue, al_get_display_event_source(game->disp));
 

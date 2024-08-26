@@ -10,25 +10,25 @@
 //game configuration
 #define SC_W        1000 //screen width
 #define SC_H        750  //screen height
-#define FPS 60.0
 #define ROW_QT      8    //quantity of lines on the game matrix
 #define COL_QT      8    //quantity of columns on the game matrix
+#define FPS         60.0
                          
-#define MATRIX_SIZE 530    //matrix size in pixels
-#define JEWEL_SIZE  ((MATRIX_SIZE/ROW_QT)-(15/ROW_QT))   //lenght of each jewel slot
-#define JEWEL_SPRITE_SIZE  65   //lenght of jewel sprite in pixels
+#define MATRIX_SIZE         530     //matrix size in pixels
+#define JEWEL_SIZE  ((MATRIX_SIZE/ROW_QT)-(15/ROW_QT))  //lenght of each jewel slot
+#define JEWEL_SPRITE_SIZE   65      //lenght of jewel sprite in pixels
 
-#define VELOCITY   240 //jewel movement velocity (pixels per second)
-#define GRAVITY_ACCEL    12   //jewel vertical movement acceleration (pixels per second)
+#define VELOCITY        240     //jewel movement velocity (pixels per second)
+#define GRAVITY_ACCEL    12     //jewel vertical movement acceleration (pixels per second)
 #define VELOCITY_PER_FRAME (float)(VELOCITY)/FPS
 #define GRAVITY_ACCEL_PER_FRAME (float)(GRAVITY_ACCEL)/FPS
 
 #define FIRST_SCORE_GOAL    250
-#define NEW_LEVEL_TIMER     30 //num of iterations on new level state
-#define SORTED_PER_FRAME    5  //num of swappings per frame on new level state
-#define NEW_LEVEL_SLOW_DOWN 3  //amount of times new level state is slown by
-#define FIRST_AVAILABLE_JEWELS  5 //number of jewels available in first level
-#define MAX_AVAILABLE_JEWELS    6
+#define NEW_LEVEL_TIMER     1.8 //time spent on new level transition animation (in seconds)
+#define NEW_LEVEL_SLOW_DOWN 3   //amount of times new level state is slown by
+#define SORTED_PER_FRAME    1   //num of swappings per frame on new level state
+#define FIRST_AVAILABLE_JEWELS  5   //number of jewels available in first level
+#define MAX_AVAILABLE_JEWELS    6   //number of maximum available jewels colors
 #define WAIT_FRAMES             20  //number of frames spent on wait
                          
 //game states
@@ -42,8 +42,6 @@
 #define HELP_PAGE   7
 #define WAIT        8
 
-#define NONE            0
-
 //status
 #define DESTROY         1
 #define DESTROY_STAR    2
@@ -53,6 +51,8 @@
 #define STAR        1
 #define SQUARE      2
 #define DIAMOND     3
+
+#define NONE            0
 
 vec2 get_rowcol(int x, int y, game_struct* mat);
 
@@ -73,10 +73,6 @@ int test_row(game_struct *mat, int row);
 int test_col(game_struct *mat, int col);
 
 int test_swap(game_struct *mat);
-
-//*swap jewels 'a' and 'b' types and set their velocity in opposit directions,
-// * x_speed y_speed being the x velocity and y velocity of jewel 'a'*/
-//void swap_jewels(jewel* j1, jewel* j2, float x_speed, float y_speed);
 
 void sort_jewels(game_struct* mat,int swap_num);
 

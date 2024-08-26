@@ -1,6 +1,6 @@
 #include "jewels_movement.h"
 
-/*sets empty jewels new types and sets their downward motion*/
+//sets empty jewels new types and sets their downward motion
 void set_falling(game_struct* mat) {
     for (int i = ROW_QT-1; i >= 0; i--) {
         for (int j = 0; j < COL_QT; j++) {
@@ -55,10 +55,10 @@ void set_jewel_motion(jewel* j1, float x_speed, float y_speed)
 }
 
 //sets jewel current position
-void set_jewel_position(jewel* j1, vec2 new_position)
+void set_jewel_position(jewel* j1, vec2 new_current_position)
 {
-    j1->current.x = new_position.x;
-    j1->current.y = new_position.y;
+    j1->current.x = new_current_position.x;
+    j1->current.y = new_current_position.y;
 }
 
 //swap types and powerups of 2 given jewels 
@@ -77,12 +77,14 @@ void swap_jewels_types(jewel* j1, jewel* j2)
     j2->power = aux_power; 
 }
 
-/*swap jewels 'a' and 'b' types and set their velocity in opposite directions,
- 
-//  x_speed y_speed being the x velocity and y velocity of jewel 'a'*/
-//void swap_jewels(jewel* j1, jewel* j2, float x_speed, float y_speed)
-void swap_jewels(jewel* j1, jewel* j2, int direction, float speed)
+/*sets jewel "j1" proper position to the neighbor slot in the direction "direction"
+  and sets it to move to the slot with velocity "speed".
+  sets jewel "j2" to the opposit direction.*/
+void swap_jewels(jewel* j1, jewel* j2, dir_type direction, float speed)
 {
+    if (direction == STALL)
+        return;
+
     swap_jewels_types(j1, j2);
 
     vec2 aux_position = j1->proper;
@@ -107,17 +109,20 @@ void swap_jewels(jewel* j1, jewel* j2, int direction, float speed)
             x_speed=0;
             y_speed=speed;
             break;
+        default:
+            break;
     }
 
     set_jewel_motion(j1, x_speed, y_speed);
     set_jewel_motion(j2, -x_speed, -y_speed);
 }
 
+// simple funtion to return absolute of float value
 static float absf(float a){
-    if (a>0)
-        return a;
+    if (a>0) return a;
     return -a;
 }
+
 /*updates position of specified jewel
   returns 0 if movement has ended
   otherwise, returns 1*/
@@ -153,28 +158,38 @@ int update_jewel(jewel *jewel)
     return moving;
 }
 
+/*updates all destroyed jewels positions
+  also updates their transparency (to make them vanish)
+  returns 0 if jewel's movement has ended
+  otherwise, returns 1*/
+int update_destroied_jewels(game_struct *mat) {
+    int moving = 0;
+    for (int row = 0; row < ROW_QT; row++)
+        for (int col = 0; col < COL_QT; col++) {
+            moving += update_jewel(&(mat->destroyed[row][col]));
+            mat->destroyed[row][col].alpha -= 12;
+
+            if (mat->destroyed[row][col].alpha < 0) 
+                mat->destroyed[row][col].alpha = 0;
+            else
+                moving=1;
+        }
+
+    return moving;
+}
+
 /*updates all jewels positions
   returns 0 if jewel's movement has ended
   otherwise, returns 1*/
-int update_all_jewels(game_struct *mat)
-{
+int update_all_jewels(game_struct *mat) {
     int moving = 0;
 
     for (int row = 0; row < ROW_QT; row++)
         for (int col = 0; col < COL_QT; col++)
             moving += update_jewel(&(mat->jewels[row][col]));
+
+    moving += update_destroied_jewels(mat);
+
     return moving;
 }
 
-int vanish_jewels(game_struct *mat)
-{
-    int moving = 0;
-    for (int row = 0; row < ROW_QT; row++)
-        for (int col = 0; col < COL_QT; col++) {
-            moving += update_jewel(&(mat->vanish[row][col]));
-            mat->vanish[row][col].alpha -= 12;
-            if (mat->vanish[row][col].alpha < 0)
-                mat->vanish[row][col].alpha = 0;
-        }
-    return moving;
-}
