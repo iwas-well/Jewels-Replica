@@ -7,8 +7,8 @@
 #include "libgame.h"
 #include "jewels_movement.h"
 
-//given (x,y) screen position, returns vector (row,col) with of the corresponding
-//slot position on the jewel matrix
+/*given (x,y) screen position, returns vector (row,col) with of the corresponding
+  slot position on the jewel matrix*/
 vec2 get_rowcol(int x, int y, game_struct* mat)
 {
     vec2 slot;
@@ -78,9 +78,9 @@ static int test_jewel_mid_sequence(game_struct* mat, int row, int col)
     return 0;
 }
 
-//tests if there is any possible move left
-//returns 0 if there is at least one move left
-//returns 1 if game ended
+/*tests if there is any possible move left
+  returns 0 if there is at least one move left
+  returns 1 if game ended*/
 int test_end_game(game_struct* mat){
     int last_row = (ROW_QT-1); 
     int last_col = (COL_QT-1); 
@@ -114,8 +114,8 @@ int test_end_game(game_struct* mat){
     return 1;
 }
 
-//register user input, setting number of selected jewels and 
-//the jewels chosen to be swapped
+/*register user input, setting number of selected jewels and 
+  the jewels chosen to be swapped*/
 int register_user_selection(ALLEGRO_EVENT* event, game_struct* mat)
 {
     vec2 clicked_slot;
@@ -144,8 +144,8 @@ int register_user_selection(ALLEGRO_EVENT* event, game_struct* mat)
     return 1;
 }
 
-//set the "swap_direction" attribute as the direction from the first selected 
-//jewel to the second
+/*set the "swap_direction" attribute as the direction from the first selected 
+  jewel to the second*/
 void set_swap_direction(game_struct *mat) {
     vec2 swap1_slot = get_rowcol(mat->swap1->current.x, mat->swap1->current.y, mat);
     vec2 swap2_slot = get_rowcol(mat->swap2->current.x, mat->swap2->current.y, mat);
@@ -209,9 +209,9 @@ int test_col(game_struct *mat, int col){
     return 0;
 }
 
-//tests if swap should be allowed (if swap forms a matching sequence)
-//returns 1 if sequence is formed by swapping
-//returns 0 if no sequence is formed
+/*tests if swap should be allowed (if swap forms a matching sequence)
+  returns 1 if sequence is formed by swapping
+  returns 0 if no sequence is formed*/
 int test_swap(game_struct *mat){
     vec2 rowcol;
     //dont need to test all column/row, only the sequence connected to the swap!
@@ -358,4 +358,35 @@ void pause_music(game_struct *mat) {
         mat->audio.inst_pos[NEW_LEVEL_AUDIO] = al_get_sample_instance_position(mat->audio.sample_inst[NEW_LEVEL_AUDIO]);
         al_stop_sample_instance(mat->audio.sample_inst[NEW_LEVEL_AUDIO]);
     }
+}
+
+int load_best_score(game_struct *mat) {
+    FILE* fd;
+    int best_score = 0;
+
+    if ( (fd = fopen(SCORE_FILE_PATH, "r")) ) {
+        fread(&best_score, sizeof(int), 1, fd);
+        fclose(fd);
+    }
+
+    mat->best_score = best_score;
+    return 0;
+}
+
+/*sets "score" attribute as the best score and saves it
+  returns 0 if score was saved successfully
+  returns 1 if score could not be saved*/
+int save_best_score(game_struct *mat) {
+    FILE *score_file;
+
+    if ( !(score_file = fopen(SCORE_FILE_PATH,"w")) ){
+        fprintf(stdin,"erro ao abrir arquivo de score\n");
+        return 1;
+    }
+
+    fwrite(&(mat->score), sizeof(int), 1, score_file);
+    fclose(score_file);
+
+    mat->best_score = mat->score;
+    return 0;
 }

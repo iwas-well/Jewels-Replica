@@ -45,16 +45,10 @@ int jewel_state_logic(game_struct *mat) {
         al_play_sample_instance(mat->audio.sample_inst[DESTROY_AUDIO]);
 
         //atualiza arquivo com best score
-        if (mat->score > mat->best_score){
-            FILE *score_file;
-            if ( !(score_file = fopen("./resources/files/score_file.txt","w")) ){
-                fprintf(stdin,"erro ao abrir arquivo de score\n");
+        if (mat->score > mat->best_score)
+            if (save_best_score(mat) != 0)
                 return 1;
-            }
-            fwrite(&(mat->score), sizeof(int), 1, score_file);
-            fclose(score_file);
-            mat->best_score = mat->score;
-        }
+
         set_falling(mat); //sets jewels downward motion and creates new jewels
         change_state(mat, UPDATE);
     }

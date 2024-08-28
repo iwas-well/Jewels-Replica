@@ -14,8 +14,8 @@
 #include "structs.h"
 #include "libgame.h" 
 
-//terminates the program if "test" parameter is 0 (NULL)
-//printing message given by the "description" parameter
+/*terminates the program if "test" parameter is 0 (NULL)
+  printing message given by the "description" parameter*/
 void must_init(bool test, const char *description)
 {
     if(test) return;

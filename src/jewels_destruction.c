@@ -212,30 +212,6 @@ static int create_row_sequence_powerups(game_struct *mat) {
     return has_jewel_sequence;
 }
 
-//int get_free_destroyed_on_row(game_struct *mat, int row, int col) {
-//    for (int i=col; i>=0; i--) {
-//        if (mat->jewels[row+k][col].type == mat->jewels[row][col].type) {
-//            if ((mat->jewels[row+k][col].status == DESTROY) && 
-//                    (mat->jewels[row+k][col].new_power == NONE)) 
-//                return i;
-//        }
-//        else
-//            break;
-//    }
-//
-//    for (int i=col+1; i<COL_QT; i++) {
-//        if (mat->jewels[row+k][col].type == mat->jewels[row][col].type) {
-//            if ((mat->jewels[row+k][col].status == DESTROY) && 
-//                    (mat->jewels[row+k][col].new_power == NONE)) 
-//                return i;
-//        }
-//        else
-//            break;
-//    }
-//
-//    return -1;
-//}
-
 int get_free_destroyed_on_column(game_struct *mat, int row, int col) {
     for (int i=col; i>=0; i--) {
         if (mat->jewels[row][i].type == mat->jewels[row][col].type) {
@@ -282,14 +258,6 @@ static int create_col_sequence_powerups(game_struct *mat) {
             //in this case, puts a star power up on the intersection
             for (int k = 0; k < seq; k++) {
                 if (mat->jewels[row+k][col].status == DESTROY) {
-                    //if ( mat->jewels[row+k][col].new_power == NONE ) {
-                    //    mat->jewels[row+k][col].new_power = STAR;
-                    //}
-                    //else {
-                        ////se ja ha powerup na intercecao, troca por star e o coloca na ponta oposta
-                        ////talvez trocar futuramente pelo inicio da coluna
-                        //mat->jewels[row+(seq-1)-k][col].new_type = mat->jewels[row+k][col].type;
-                        //mat->jewels[row+(seq-1)-k][col].new_power = mat->jewels[row+k][col].new_power;
                         int free_col = get_free_destroyed_on_column(mat, row+k, col);
                         if (free_col != -1) {
                             mat->jewels[row+k][free_col].new_type = mat->jewels[row+k][col].new_type;

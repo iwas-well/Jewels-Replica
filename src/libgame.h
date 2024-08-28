@@ -50,8 +50,8 @@
 
 #define NONE            0
 
-//given (x,y) screen position, returns vector (row,col) with of the corresponding
-//slot position on the jewel matrix
+/*given (x,y) screen position, returns vector (row,col) with of the corresponding
+  slot position on the jewel matrix*/
 vec2 get_rowcol(int x, int y, game_struct* mat);
 
 //incerases game score according to given sequence size
@@ -63,17 +63,17 @@ void increase_score_power(game_struct* mat, int powerup);
 //returns random jewel in the [0..avai_jewels] range
 j_type get_new_type(int avail_jewels);
 
-//tests if there is any possible move left
-//returns 0 if there is at least one move left
-//returns 1 if game ended
+/*tests if there is any possible move left
+  returns 0 if there is at least one move left
+  returns 1 if game ended*/
 int test_end_game(game_struct* mat);
 
-//register user input, setting number of selected jewels and 
-//the jewels chosen to be swapped
+/*register user input, setting number of selected jewels and 
+  the jewels chosen to be swapped*/
 int register_user_selection(ALLEGRO_EVENT* event, game_struct* mat);
 
-//set the "swap_direction" attribute as the direction from the first selected 
-//jewel to the second
+/*set the "swap_direction" attribute as the direction from the first selected 
+  jewel to the second*/
 void set_swap_direction(game_struct *mat);
 
 //tests if there is any match 3 in the given row
@@ -82,9 +82,9 @@ int test_row(game_struct *mat, int row);
 //tests if there is any match 3 in the given col
 int test_col(game_struct *mat, int col);
 
-//tests if swap should be allowed (if swap forms a matching sequence)
-//returns 1 if sequence is formed by swapping
-//returns 0 if no sequence is formed
+/*tests if swap should be allowed (if swap forms a matching sequence)
+  returns 1 if sequence is formed by swapping
+  returns 0 if no sequence is formed*/
 int test_swap(game_struct *mat);
 
 //swap random jewels 'swap_num' times
@@ -118,5 +118,12 @@ void continue_music(game_struct *mat);
 void pause_music(game_struct *mat);
 
 void toggle_pause_state(game_struct *mat, int state);
+
+int load_best_score(game_struct *mat);
+
+/*sets "score" attribute as the best score and saves it
+  returns 0 if score was saved successfully
+  returns 1 if score could not be saved*/
+int save_best_score(game_struct *mat);
 
 #endif

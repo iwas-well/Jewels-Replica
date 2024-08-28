@@ -23,16 +23,6 @@ static void process_keyboard_input(game_struct *mat) {
     }
 }
 
-static int load_best_score(char* file_path){
-    FILE* fd;
-    int best_score = 0;
-    if ( (fd = fopen(file_path,"r")) ) {
-        fread(&best_score, sizeof(int), 1, fd);
-        fclose(fd);
-    }
-    return best_score;
-}
-
 int main()
 {
     game_struct mat;
@@ -43,7 +33,7 @@ int main()
     }
     initialize_allegro_dependencies(&mat);
 
-    mat.best_score = load_best_score(SCORE_FILE_PATH);
+    load_best_score(&mat);
 
     while (1) { //game loop
         //wait for event queue to recieve an event.
